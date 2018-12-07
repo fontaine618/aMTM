@@ -1,2 +1,2 @@
 # aMTM
-Adaptive Multiple-Try Metropolis algorithm
+Adaptive Multiple-Try Metropolis algorithm +
