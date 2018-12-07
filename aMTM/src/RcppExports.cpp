@@ -6,59 +6,37 @@
 
 using namespace Rcpp;
 
-// rcpparma_hello_world
-arma::mat rcpparma_hello_world();
-RcppExport SEXP _anRpackage_rcpparma_hello_world() {
+// aMTMsample
+List aMTMsample(Function target, int N, int d, int K, arma::vec x0, arma::cube sig0, arma::mat mu0, arma::vec lam0, int adapt, int proposal, double accrate, double gamma, List parms, double beta);
+RcppExport SEXP _aMTM_aMTMsample(SEXP targetSEXP, SEXP NSEXP, SEXP dSEXP, SEXP KSEXP, SEXP x0SEXP, SEXP sig0SEXP, SEXP mu0SEXP, SEXP lam0SEXP, SEXP adaptSEXP, SEXP proposalSEXP, SEXP accrateSEXP, SEXP gammaSEXP, SEXP parmsSEXP, SEXP betaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(rcpparma_hello_world());
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpparma_outerproduct
-arma::mat rcpparma_outerproduct(const arma::colvec& x);
-RcppExport SEXP _anRpackage_rcpparma_outerproduct(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::colvec& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpparma_outerproduct(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpparma_innerproduct
-double rcpparma_innerproduct(const arma::colvec& x);
-RcppExport SEXP _anRpackage_rcpparma_innerproduct(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::colvec& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpparma_innerproduct(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpparma_bothproducts
-Rcpp::List rcpparma_bothproducts(const arma::colvec& x);
-RcppExport SEXP _anRpackage_rcpparma_bothproducts(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::colvec& >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpparma_bothproducts(x));
+    Rcpp::traits::input_parameter< Function >::type target(targetSEXP);
+    Rcpp::traits::input_parameter< int >::type N(NSEXP);
+    Rcpp::traits::input_parameter< int >::type d(dSEXP);
+    Rcpp::traits::input_parameter< int >::type K(KSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type x0(x0SEXP);
+    Rcpp::traits::input_parameter< arma::cube >::type sig0(sig0SEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type mu0(mu0SEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type lam0(lam0SEXP);
+    Rcpp::traits::input_parameter< int >::type adapt(adaptSEXP);
+    Rcpp::traits::input_parameter< int >::type proposal(proposalSEXP);
+    Rcpp::traits::input_parameter< double >::type accrate(accrateSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< List >::type parms(parmsSEXP);
+    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
+    rcpp_result_gen = Rcpp::wrap(aMTMsample(target, N, d, K, x0, sig0, mu0, lam0, adapt, proposal, accrate, gamma, parms, beta));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_anRpackage_rcpparma_hello_world", (DL_FUNC) &_anRpackage_rcpparma_hello_world, 0},
-    {"_anRpackage_rcpparma_outerproduct", (DL_FUNC) &_anRpackage_rcpparma_outerproduct, 1},
-    {"_anRpackage_rcpparma_innerproduct", (DL_FUNC) &_anRpackage_rcpparma_innerproduct, 1},
-    {"_anRpackage_rcpparma_bothproducts", (DL_FUNC) &_anRpackage_rcpparma_bothproducts, 1},
+    {"_aMTM_aMTMsample", (DL_FUNC) &_aMTM_aMTMsample, 14},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_anRpackage(DllInfo *dll) {
+RcppExport void R_init_aMTM(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }
