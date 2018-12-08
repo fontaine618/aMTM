@@ -54,32 +54,35 @@ inline arma::mat chol_downdate(arma::mat& L, arma::vec& u) {
    L(n, n) = sqrt(L(n, n) * L(n, n) - u(n) * u(n));return L;
 }
 // [[Rcpp::export]]
-List aMTMsample(Function target,
-                int N,
-                int d,
-                int K,
-                arma::vec x0,
-                arma::cube sig0,
-                arma::mat mu0,
-                arma::vec lam0,
-                int adapt,
-                int proposal,
-                double accrate,
-                double gamma,
-                List parms,
-                double beta) {
+List aMTMsample(Function target,             // target density
+                int N,                       // sample size
+                int d,                       // dimension
+                int K,                       // number of proposals
+                arma::vec x0,                // initial state
+                arma::cube sig0,             // initial covariances
+                arma::mat mu0,               // initial means
+                arma::vec lam0,              // initial scale parameter
+                int adapt,                   // update function (0= nodapt, 1=AM, 2=ASWAM, 3=RAM)
+                int global,                 // adapt global component 
+                int scale,                  // adapt non selected
+                int local,                  // use local steps (AM and ASWAM only)
+                int proposal,                // type of proposal (0=independant,1=common RV,2=QMC,3=EA)
+                double accrate,              // target acceptance rate (ASWAM and RAM)
+                double gamma,                // adaptation step decrease power
+                List parms,                  // list of parameters to pass to target
+                double beta) {               // for the weight function
    //--------------------------------------------------------------------
    // DECLARE VARIABLES AND INITIALIZE
    arma::vec w(K);            //vector of weights
       w.ones();
-   double sw=0;               //sum of weights
+   double sw=0.0;               //sum of weights
    arma::vec wt(K);           //vector of reverse weights
       wt.ones();
-   double swt=0;              //sum of reverse weights
+   double swt=0.0;              //sum of reverse weights
    arma::vec wb(K);           //vector of standardized weights, i.e. selection probabilities
       wb.ones();
-   arma::mat Sy(N,K);         //contains the selected candidate (1 if selected, 0 otherwise)
-      Sy.zeros();
+   arma::vec Sy(K);           //vector of running selection proportions
+      Sy.fill(1.0/K);
    arma::vec sel(N);          //vector containing which candidate was selected (k_n)
       sel.zeros();
    arma::vec acc(N);          //vector of acceptatnce probability (alpha_n^(k_n))
@@ -90,7 +93,7 @@ List aMTMsample(Function target,
       X.zeros();
       X.row(0) = x0.t();      //initialize to initial value
    arma::mat mu=mu0;          //mean parameters, initialize to initial value
-   arma::vec lam=lam0;        //scale parameter, initialize to initial value
+   arma::vec lam;             //scale parameter
    arma::cube S(d,d,K);       //square root of variances, itilialize to initial value
    for(int k=0;k<K;k++){
       S.slice(k) = arma::chol(sig0.slice(k)).t();
@@ -107,15 +110,20 @@ List aMTMsample(Function target,
       u.zeros();
    arma::rowvec y;            //to pass to R when evaluating target
       y.zeros();
-   double gam=0;              //adaptation step
+   double gam=0.0;            //adaptation step
    double un=0.0;             //uniform RV for selection
    double a=0.0;              //temp acceptance probability
    int s=0;                   //selection index
    //--------------------------------------------------------------------
    // SPECIFIC INITIALIZATIONS AND PRECOMPUTATIONS FOR ADAPTATION
-   //if we do not use a scale parameter
-   if(adapt==2){
+   // initialize scale parameter
+   switch(adapt){
+   case 1: //AM
+      lam.fill((2.38)*(2.38)/d);
+   case 2: //ASWAM
       lam.ones();
+   case 3: //RAM
+      lam = lam0;
    }
    //for QMC
    boost::math::normal norm;  //normal distribution object
@@ -164,12 +172,13 @@ List aMTMsample(Function target,
          else wb=arma::ones(K)/K;
       // proposal selection
          un = arma::randu<double>();
-         sw=0;s=0;
+         sw=0.0;s=0;
          for(int k=0;k<K;k++){
             sw=sw+wb(k);
             if(sw>un && un>sw-wb(k))s=k;
          }
-         Sy(n,s)=1.0;sel(n)=s;
+         //Sy(n,s)=1.0;
+         sel(n)=s;
       // reference points sampling normal standard by correlation structure
          switch (proposal){
          case 0:
@@ -215,44 +224,60 @@ List aMTMsample(Function target,
       // adaptation rate
          gam = std::pow((double)n,-gamma);
          if(gam>0.99)gam=0.99;
-      // adaptation of kernel s, adapt = 0 => no adaptation
-
-         switch (adapt){
-            case 1:
-               // alg 1
-               u = (X.row(n).t() - mu.col(s));
-               mu.col(s) = mu.col(s) + gam * u;
-               u = u * sqrt(gam / (1-gam));
-               chol_update(S.slice(s),u);
-               S.slice(s)=S.slice(s)*sqrt(1-gam);
-               lam(s) = exp(log(lam(s)) + gam * (a-accrate));
-            break;
-            case 2:
-               // alg 2
-               u = S.slice(s) * U.col(s);
-               u = u* sqrt(gam * std::pow(fabs(a-accrate), 1.0/1.0)) /
-                  arma::norm(U.col(s));
-               if(a-accrate > 0.0) {
-                  chol_update(S.slice(s),u);
+      // adaptation cycling through the proposals
+         for(int k=0;k<K;k++){
+         // adapt covariance if selected of if first and global adaptation is enables
+            if(s == k || (k==1 && global==1)){
+            // AM and ASWAM are similar so we group them
+               if(adapt == 1 || adapt == 2){
+               // the update steps depends on the local trigger
+                  switch(local){
+                     case 1:
+                        u = (X.row(n).t() - X.row(n-1).t());
+                        break;
+                     case 0:
+                        u = (X.row(n).t() - mu.col(k));
+                        mu.col(k) = mu.col(k) + gam * u;
+                        break;
+                  }
+               // update the covariance
+                  u = u * sqrt(gam / (1-gam));
+                  chol_update(S.slice(k),u);
+                  S.slice(k)=S.slice(k)*sqrt(1-gam);
+               // update the scaling parameter if ASWAM
+                  if(adapt == 2){
+                     lam(k) = exp(log(lam(k)) + gam * (a-accrate));
+                  }
                }
-               else{
-                  chol_downdate(S.slice(s),u);
+            // RAM update
+               if(adapt == 3){
+                  u = S.slice(k) * U.col(k);
+                  u = u* sqrt(gam * std::pow(fabs(a-accrate), 1.0/1.0)) /
+                     arma::norm(U.col(k));
+                  if(a-accrate > 0.0) {
+                     chol_update(S.slice(k),u);
+                  }
+                  else{
+                     chol_downdate(S.slice(k),u);
+                  }
+                  if(any(S.slice(k).diag())<1e-7) S.slice(k).diag() += 1e-7;
                }
-               if(any(S.slice(s).diag())<1e-7) S.slice(s).diag() += 1e-7;
-            break;
-            case 3:
-               // alg 3
-               u = (X.row(n).t() - X.row(n-1).t());
-               u = u * sqrt(gam / (1-gam));
-               chol_update(S.slice(s),u);
-               S.slice(s)=S.slice(s)*sqrt(1-gam);
-               lam(s) = exp(log(lam(s)) + gam * (a-accrate));
-            break;
+            // adapt = 0 we do nothing
+            }
+         // adapt scaling of not selected if adaptation is enabled
+            // Sy[k] = Sy[k] + gam * (double(s==k) - 1.0/K);
+            if(n>100){
+               Sy(k) = 0.0;
+               for(int i = n-99;i<=n;i++){
+                  Sy(k) += (sel(i) == k)/100.0;
+               }
+            }
+            //if(Sy[k]<0.0)Sy[k]=0.0;
+            //if(Sy[k]>1.0)Sy[k]=1.0;
+            if(s!=k && scale==1 && Sy(k) < 0.1/K){
+               lam(k) = exp(log(lam(k)) + gam );
+            }
          }
-         alpha(s) = alpha(s) + gam * (a-alpha(s));
-         alpha(K) = alpha(K) + gam * (a-alpha(K));
-
-
    }
    // return the covariances
       arma::cube Sig(d,d,K);
