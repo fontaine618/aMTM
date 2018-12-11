@@ -114,6 +114,7 @@ List aMTMsample(Function target,             // target density
    double un=0.0;             //uniform RV for selection
    double a=0.0;              //temp acceptance probability
    int s=0;                   //selection index
+   int j;                     //for some counting
    //--------------------------------------------------------------------
    // SPECIFIC INITIALIZATIONS AND PRECOMPUTATIONS FOR ADAPTATION
    // initialize scale parameter
@@ -133,7 +134,39 @@ List aMTMsample(Function target,             // target density
       for(int i=0;i<d;i++)Ua(i) = pow(ai,i) /K;
    }
    //for extremely antithetic
-
+   double rho = -1.0/(K-1.0);    //correlation
+   arma::mat Phi(d*K,d*K);       
+   arma::mat Phi2(d*K,d*K);      
+   arma::vec eige(d*K);
+   arma::mat Phi2t(d*K,d*K);
+   arma::mat Psi(d*(K-1),d*(K-1));       
+   arma::mat Psi2(d*(K-1),d*(K-1));      
+   arma::vec eiges(d*(K-1));
+   arma::mat Psi2t(d*(K-1),d*(K-1));
+   arma::colvec z(d*K);
+   arma::colvec zt(d*(K-1));
+   if(proposal == 3){
+      //correlation matrix for proposals
+         for(int k=1;k<K;k++){
+            Phi.diag(k*d).ones();
+            Phi.diag(-k*d).ones();
+         }
+         Phi*=rho;
+         Phi.diag().ones();
+      //decomposed correlation matrix for proposals
+         svd(Phi2,eige,Phi2t,Phi);
+         Phi2 = Phi2 * arma::diagmat(sqrt(eige));
+      //correaltion matrices for reference points
+         for(int k=0;k<K-1;k++){
+            Psi.diag(k*d).ones();
+            Psi.diag(-k*d).ones();
+         }
+         Psi*=rho;
+         Psi.diag() += arma::ones(d*(K-1));
+      //decomposed correlation matrix for proposals
+         svd(Psi2,eiges,Psi2t,Psi,"std");
+         Psi2 = Psi2 * arma::diagmat(sqrt(eiges));
+   }
    //--------------------------------------------------------------------
    // MCMC ITERATION
    for(int n=1;n<N;n++){
@@ -156,6 +189,13 @@ List aMTMsample(Function target,             // target density
                U.col(k) = (u + k*Ua) - floor(u + k*Ua);
                for(arma::uword i=0; i < u.n_elem;i++) U(i,k) = quantile(norm,U(i,k));
             }
+            break;
+         case 3:
+            //Extremely antithetic
+            z = arma::randn(d*K);
+            for(int k=0;k<K;k++){
+               U.col(k) = Phi2.rows(d*k, d*(k+1)-1) * z;
+            } 
             break;
          }
       // compute the candidates and weights
@@ -195,6 +235,18 @@ List aMTMsample(Function target,             // target density
             for(int k=0;k<K;k++){
                Ut.col(k) = (-U.col(s) + k*Ua) - floor(-U.col(s) + k*Ua);
                for(arma::uword i=0; i < u.n_elem;i++) Ut(i,k) = quantile(norm,Ut(i,k));
+            }
+            break;
+         case 3:
+            //Extremely antithetic
+            zt = arma::randn(d*(K-1));
+            j=0;
+            for(int k=0;k<K;k++){
+               if(k!=s){
+                  Ut.col(k) = Psi2.rows(d*j, d*(j+1)-1) * zt;
+                  Ut.col(k) = Ut.col(k)-rho*Ut.col(s);
+                  j+=1;
+               }
             }
             break;
          }

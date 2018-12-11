@@ -37,7 +37,7 @@ p <- function(x,pa){
 }
 p <- compiler::cmpfun(p)
 #initialize
-K <- 5
+K <- 3
 x0 = rnorm(d, 0,5)
 sig0 = array(0, dim = c(d,d,K))
 for(k in seq(K)){
@@ -51,9 +51,9 @@ library(aMTM)
 set.seed(1)
 mcmc <- aMTM(target = p, N = N, K = as.integer(K),
              x0 = x0, sig0 = sig0, mu0 = mu0, lam0 = lam0,
-             adapt = 2, global =F, scale =T, local =T,
+             adapt = 2, global =F, scale =F, local =T,
              proposal = 0, accrate = 0.45, gamma = 0.7,
-             parms = parms, beta = 0)
+             parms = parms, beta = 1)
 X <- mcmc$X[seq(burnin*N,N),]
 plot(X, xlim = ranges[,1], ylim = ranges[,2],
      col=mcmc$sel+1)
