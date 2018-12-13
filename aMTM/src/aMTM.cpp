@@ -115,20 +115,23 @@ List aMTMsample(Function target,             // target density
    double a=0.0;              //temp acceptance probability
    int s=0;                   //selection index
    int j;                     //for some counting
+   arma::mat tmpS(d,d);       //for temporary update of S
+   arma::vec tmpmu(d);        //for temporary update of mu
+   double tmplam;             //for temporary update of lam
+   double tmpnorm;            //temporary storage of norms
    //--------------------------------------------------------------------
    // SPECIFIC INITIALIZATIONS AND PRECOMPUTATIONS FOR ADAPTATION
-   // initialize scale parameter
-   switch(adapt){
-   case 1: //AM
-      lam.fill((2.38)*(2.38)/d);
-   case 2: //ASWAM
-      lam.ones();
-   case 3: //RAM
-      lam = lam0;
-   }
+   // initialize scale parameter (do in R code)
+   // switch(adapt){
+   //    case 0: lam = lam0;
+   //    case 1: lam.fill((2.38)*(2.38)/d);
+   //    case 2: lam.fill(1);
+   //    case 3: lam.fill(1);
+   // }
+   lam = lam0;
    //for QMC
    boost::math::normal norm;  //normal distribution object
-   int ai = floor(K/3);       //Koborov integer parameter
+   int ai = floor(2*K/3);       //Koborov integer parameter
    arma::vec Ua(d);           //base vector for Koborov rule (others are multiple of this one and mod1)
    if(proposal == 2){
       for(int i=0;i<d;i++)Ua(i) = pow(ai,i) /K;
@@ -279,7 +282,7 @@ List aMTMsample(Function target,             // target density
       // adaptation cycling through the proposals
          for(int k=0;k<K;k++){
          // adapt covariance if selected of if first and global adaptation is enables
-            if(s == k || (k==1 && global==1)){
+            if(s == k || (k==0 && global==1)){
             // AM and ASWAM are similar so we group them
                if(adapt == 1 || adapt == 2){
                // the update steps depends on the local trigger
@@ -289,30 +292,43 @@ List aMTMsample(Function target,             // target density
                         break;
                      case 0:
                         u = (X.row(n).t() - mu.col(k));
-                        mu.col(k) = mu.col(k) + gam * u;
+                        tmpmu = mu.col(k) + gam * u;
+                        tmpnorm = arma::norm(tmpmu, 2);
+                        if(tmpnorm > 1.0e+6){tmpmu = tmpmu * (1.0e+6 / tmpnorm);}
+                        mu.col(k) = tmpmu;
                         break;
                   }
                // update the covariance
-                  u = u * sqrt(gam / (1-gam));
-                  chol_update(S.slice(k),u);
-                  S.slice(k)=S.slice(k)*sqrt(1-gam);
+                  u = u * sqrt(gam / (1.0-gam));
+                  tmpS = S.slice(k);
+                  chol_update(tmpS,u);
+                  tmpS = tmpS*sqrt(1.0-gam);
+                  tmpnorm = arma::norm(tmpS, "fro");
+                  if(tmpnorm > 1.0e+6){tmpS = tmpS * (1.0e+6 / tmpnorm);}
+                  if(tmpnorm < 1.0e-6){tmpS = tmpS * (1.0e-6 / tmpnorm);}
+                  S.slice(k) = tmpS;
                // update the scaling parameter if ASWAM
                   if(adapt == 2){
-                     lam(k) = exp(log(lam(k)) + gam * (a-accrate));
+                     tmplam = exp(log(lam(k)) + gam * (a-accrate));
+                     if(tmplam > 1.0e+6){tmplam = 1.0e+6;}
+                     if(tmplam < 1.0e-6){tmplam = 1.0e-6;}
+                     lam(k) = tmplam;
                   }
                }
             // RAM update
                if(adapt == 3){
-                  u = S.slice(k) * U.col(k);
-                  u = u* sqrt(gam * std::pow(fabs(a-accrate), 1.0/1.0)) /
-                     arma::norm(U.col(k));
-                  if(a-accrate > 0.0) {
-                     chol_update(S.slice(k),u);
-                  }
-                  else{
-                     chol_downdate(S.slice(k),u);
-                  }
-                  if(any(S.slice(k).diag())<1e-7) S.slice(k).diag() += 1e-7;
+                  tmpS = S.slice(k);
+                  u = tmpS * U.col(k);
+                  // u = u* sqrt(gam * std::pow(fabs(a-accrate), 1.0/1.0)) /
+                  //    arma::norm(U.col(k));
+                  u = u* sqrt(gam * fabs(a-accrate)) / arma::norm(U.col(k), 2);
+                  if(a-accrate > 0.0) chol_update(tmpS,u);
+                  else chol_downdate(tmpS,u);
+                  if(any(tmpS.diag())<1e-7) {tmpS.diag() += 1e-7;}
+                  tmpnorm = arma::norm(tmpS, "fro");
+                  if(tmpnorm > 1.0e+6){tmpS = tmpS * (1.0e+6 / tmpnorm);}
+                  if(tmpnorm < 1.0e-6){tmpS = tmpS * (1.0e-6 / tmpnorm);}
+                  S.slice(k) = tmpS;
                }
             // adapt = 0 we do nothing
             }
@@ -327,7 +343,10 @@ List aMTMsample(Function target,             // target density
             //if(Sy[k]<0.0)Sy[k]=0.0;
             //if(Sy[k]>1.0)Sy[k]=1.0;
             if(s!=k && scale==1 && Sy(k) < 0.1/K){
-               lam(k) = exp(log(lam(k)) + gam );
+               tmplam = exp(log(lam(k)) - gam );
+               if(tmplam > 1.0e+6) tmplam = 1.0e+6;
+               if(tmplam < 1.0e-6) tmplam = 1.0e-6;
+               lam(k) = tmplam;
             }
          }
    }
