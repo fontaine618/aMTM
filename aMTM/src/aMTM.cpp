@@ -10,6 +10,9 @@ using namespace Rcpp;
 inline double evalTarget(Function target, arma::rowvec x, List parms) {
    return as<double>( wrap( target(x, parms) ) );
 }
+// Both cholesky update and downdate are from the ramcmc package by Jouni Helske
+// https://github.com/helske/ramcmc/blob/master/inst/include/ramcmc.h
+// for future reference
 
 // Cholesky update
 // Given the lower triangular matrix L obtained from the Cholesky decomposition of A=LL',
@@ -53,6 +56,59 @@ inline arma::mat chol_downdate(arma::mat& L, arma::vec& u) {
    }
    L(n, n) = sqrt(L(n, n) * L(n, n) - u(n) * u(n));return L;
 }
+
+inline arma::mat EA_prepare_Phi(int d,int K){
+   double rho = -1.0/(K-1.0);
+   arma::mat Phi(d*K,d*K); 
+   Phi.zeros();
+   arma::mat Phi2(d*K,d*K);
+   Phi2.zeros();
+   arma::vec eige(d*K);
+   eige.zeros();
+   arma::mat Phi2t(d*K,d*K);
+   Phi2t.zeros();
+   //correlation matrix for proposals
+   for(int k=0;k<K;k++){
+      if(k==0){
+         Phi.diag(0).fill(1.0);
+      }else{
+         Phi.diag(k*d).fill(rho);
+         Phi.diag(-k*d).fill(rho);
+      }
+   }
+   //decomposed correlation matrix for proposals
+   arma::svd(Phi2,eige,Phi2t,Phi);
+   Phi2 = Phi2 * arma::diagmat(sqrt(eige));
+   return Phi2;
+}
+
+
+inline arma::mat EA_prepare_Psi(int d,int K){
+   double rho = -1.0/(K-1.0);
+   arma::mat Psi(d*(K-1),d*(K-1));  
+   Psi.zeros();
+   arma::mat Psi2(d*(K-1),d*(K-1)); 
+   Psi2.zeros();
+   arma::vec eiges(d*(K-1));
+   eiges.zeros();
+   arma::mat Psi2t(d*(K-1),d*(K-1));
+   Psi2t.zeros();
+   //correaltion matrices for reference points
+   for(int k=0;k<K-1;k++){
+      if(k==0){
+         Psi.diag(0).fill(1.0+rho);
+      }else{
+         Psi.diag(k*d).fill(rho);
+         Psi.diag(-k*d).fill(rho);
+      }
+   }
+   //decomposed correlation matrix for proposals
+   arma::svd(Psi2,eiges,Psi2t,Psi,"std");
+   Psi2 = Psi2 * arma::diagmat(sqrt(eiges));
+   return Psi2;
+}
+
+
 // [[Rcpp::export]]
 List aMTMsample(Function target,             // target density
                 int N,                       // sample size
@@ -87,8 +143,6 @@ List aMTMsample(Function target,             // target density
       sel.zeros();
    arma::vec acc(N);          //vector of acceptatnce probability (alpha_n^(k_n))
       acc.zeros();
-   arma::vec alpha(K+1);      //running acceptance probability for each candidate and globally (K+1)
-      alpha.zeros();
    arma::mat X(N,d);          //matrix of the sampled chain
       X.zeros();
       X.row(0) = x0.t();      //initialize to initial value
@@ -121,13 +175,6 @@ List aMTMsample(Function target,             // target density
    double tmpnorm;            //temporary storage of norms
    //--------------------------------------------------------------------
    // SPECIFIC INITIALIZATIONS AND PRECOMPUTATIONS FOR ADAPTATION
-   // initialize scale parameter (do in R code)
-   // switch(adapt){
-   //    case 0: lam = lam0;
-   //    case 1: lam.fill((2.38)*(2.38)/d);
-   //    case 2: lam.fill(1);
-   //    case 3: lam.fill(1);
-   // }
    lam = lam0;
    //for QMC
    boost::math::normal norm;  //normal distribution object
@@ -137,38 +184,14 @@ List aMTMsample(Function target,             // target density
       for(int i=0;i<d;i++)Ua(i) = pow(ai,i) /K;
    }
    //for extremely antithetic
-   double rho = -1.0/(K-1.0);    //correlation
-   arma::mat Phi(d*K,d*K);       
-   arma::mat Phi2(d*K,d*K);      
-   arma::vec eige(d*K);
-   arma::mat Phi2t(d*K,d*K);
-   arma::mat Psi(d*(K-1),d*(K-1));       
-   arma::mat Psi2(d*(K-1),d*(K-1));      
-   arma::vec eiges(d*(K-1));
-   arma::mat Psi2t(d*(K-1),d*(K-1));
+   double rho = -1.0/(K-1.0);       
+   arma::mat Phi2(d*(K),d*(K)); 
+   arma::mat Psi2(d*(K-1),d*(K-1)); 
    arma::colvec z(d*K);
    arma::colvec zt(d*(K-1));
    if(proposal == 3){
-      //correlation matrix for proposals
-         for(int k=1;k<K;k++){
-            Phi.diag(k*d).ones();
-            Phi.diag(-k*d).ones();
-         }
-         Phi*=rho;
-         Phi.diag().ones();
-      //decomposed correlation matrix for proposals
-         svd(Phi2,eige,Phi2t,Phi);
-         Phi2 = Phi2 * arma::diagmat(sqrt(eige));
-      //correaltion matrices for reference points
-         for(int k=0;k<K-1;k++){
-            Psi.diag(k*d).ones();
-            Psi.diag(-k*d).ones();
-         }
-         Psi*=rho;
-         Psi.diag() += arma::ones(d*(K-1));
-      //decomposed correlation matrix for proposals
-         svd(Psi2,eiges,Psi2t,Psi,"std");
-         Psi2 = Psi2 * arma::diagmat(sqrt(eiges));
+      Phi2 = EA_prepare_Phi(d,K);
+      Psi2 = EA_prepare_Psi(d,K);
    }
    //--------------------------------------------------------------------
    // MCMC ITERATION
@@ -316,6 +339,7 @@ List aMTMsample(Function target,             // target density
                   }
                }
             // RAM update
+            // inspired from the ramcmc package by Jouni Helske
                if(adapt == 3){
                   tmpS = S.slice(k);
                   u = tmpS * U.col(k);
@@ -356,7 +380,6 @@ List aMTMsample(Function target,             // target density
          Sig.slice(k) = S.slice(k) * S.slice(k).t();
       }
    // OUTPUT LIST
-      return List::create(X,sel,acc,alpha,mu,Sig,
-                        lam,accrate,N,K,d,Sy);
+      return List::create(X,sel,acc,mu,Sig,lam);
 }
 

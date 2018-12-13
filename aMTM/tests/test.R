@@ -1,8 +1,8 @@
 d <- 3
-M <- 3
+M <- 2
 
 N <- 10000
-burnin <- 0.5
+burnin <- 0.1
 
 # MIXTURE OF NORMALS
 set.seed(4)
@@ -10,7 +10,7 @@ x <- matrix(rnorm(N*d,0,1),N,d)
 w.t <- rep(1/M,M)
 w.t <- w.t/sum(w.t)
 id <- sample.int(M, N, replace=T, prob = w.t )
-mu.t = array(rnorm(d*M, 0,10), dim = c(M,d))
+mu.t = array(rnorm(d*M, 0,5), dim = c(M,d))
 Sigma.t = array(0, dim = c(d,d,M))
 for(m in seq(M)){
    S <- matrix(rnorm(d^2,0,2),d)
@@ -25,8 +25,10 @@ x <- sapply(seq(nrow(x)),function(i) {
    mu.t[id[i],] + t(S[,,id[i]]) %*% x[i,]
 })
 ranges <- apply(t(x),2,range)
-plot(t(x), xlim = ranges[,1], ylim = ranges[,2])
-
+#plot(t(x), xlim = ranges[,1], ylim = ranges[,2])
+#pairs(t(x))
+mlda <- MASS::lda(x=t(x), grouping = id)
+Sigma <- var(t(x))
 #target function
 parms <- list(M=M,mu=t(mu.t),Sinv=Sinv,w=w.t,denum=denum)
 p <- function(x,pa){
@@ -38,7 +40,7 @@ p <- function(x,pa){
 p <- compiler::cmpfun(p)
 #initialize
 #par(mfrow=c(2,2))
-K <- 3
+K <- 4
 x0 = rnorm(d, 0,5)
 sig0 = array(0, dim = c(d,d,K))
 for(k in seq(K)){
@@ -53,34 +55,11 @@ set.seed(1)
 mcmc <- aMTM(target = p, N = N, K = K,
              x0 = x0, sig0 = sig0, mu0 = mu0, lam0 = lam0,
              adapt = 2, global = T, scale = T, local = T,
-             proposal = 0, accrate = 0.35, gamma = 0.65,
-             parms = parms, beta = 0)
-X <- mcmc$X[seq(burnin*N,N),]
+             proposal = 3, accrate = 0.30, gamma = 0.65,
+             parms = parms, weight = 0, burnin=burnin)
 
-par(mfrow=c(2,2),mar=c(3,3,3,3))
-vars <- c(1,2)
-plot(X[,vars], xlim = ranges[,vars[1]], ylim = ranges[,vars[2]], col=mcmc$sel+1,
-     xlab = vars[1], ylab= vars[2])
-for(k in seq(K)){
-   mixtools::ellipse(mu=apply(X[,vars],2,mean), sigma=mcmc$Sig[vars,vars,k]*mcmc$lam[k], alpha = .01,
-                     npoints = 250, col=k, lty = 1,lwd=2)
-}
-vars <- c(3,2)
-plot(X[,vars], xlim = ranges[,vars[1]], ylim = ranges[,vars[2]], col=mcmc$sel+1,
-     xlab = vars[1], ylab= vars[2])
-for(k in seq(K)){
-   mixtools::ellipse(mu=apply(X[,vars],2,mean), sigma=mcmc$Sig[vars,vars,k]*mcmc$lam[k], alpha = .01,
-                     npoints = 250, col=k, lty = 1,lwd=2)
-}
-vars <- c(1,3)
-plot(X[,vars], xlim = ranges[,vars[1]], ylim = ranges[,vars[2]], col=mcmc$sel+1,
-     xlab = vars[1], ylab= vars[2])
-for(k in seq(K)){
-   mixtools::ellipse(mu=apply(X[,vars],2,mean), sigma=mcmc$Sig[vars,vars,k]*mcmc$lam[k], alpha = .01,
-                     npoints = 250, col=k, lty = 1,lwd=2)
-}
-plot(t(x), xlim = ranges[,1], ylim = ranges[,2])
-
-#sapply(seq(K), function(k) mcmc$Sig[,,k] * mcmc$lam[k], simplify = 'array')
-mean(mcmc$acc)
-table(mcmc$sel[seq(burnin*N,N)])/(N*(1-burnin))
+round(mix.compare(mcmc,parms,Sigma,mlda),3)
+#X <- matrix(mcmc$X,N,d)
+pairs(mcmc$X, col = mcmc$sel+1)
+#pairs(t(x))
+mcmc$Sig
