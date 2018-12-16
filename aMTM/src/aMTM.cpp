@@ -148,6 +148,7 @@ List aMTMsample(Function target,             // target density
       X.row(0) = x0.t();      //initialize to initial value
    arma::mat mu=mu0;          //mean parameters, initialize to initial value
    arma::vec lam;             //scale parameter
+      lam = lam0;
    arma::cube S(d,d,K);       //square root of variances, itilialize to initial value
    for(int k=0;k<K;k++){
       S.slice(k) = arma::chol(sig0.slice(k)).t();
@@ -175,7 +176,6 @@ List aMTMsample(Function target,             // target density
    double tmpnorm;            //temporary storage of norms
    //--------------------------------------------------------------------
    // SPECIFIC INITIALIZATIONS AND PRECOMPUTATIONS FOR ADAPTATION
-   lam = lam0;
    //for QMC
    boost::math::normal norm;  //normal distribution object
    int ai = floor(2*K/3);       //Koborov integer parameter

@@ -1,3 +1,4 @@
 useDynLib(aMTM, .registration=TRUE)
 importFrom(Rcpp, evalCpp)
+importFrom(coda, mcmc)
 exportPattern("^[[:alpha:]]+")
