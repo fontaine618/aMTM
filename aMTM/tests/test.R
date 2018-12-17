@@ -45,7 +45,7 @@ p <- function(x,pa){
       pa$w[i] * exp(-0.5*(x-pa$mu[,i]) %*% pa$Sinv[,,i] %*% (x-pa$mu[,i]))/pa$denum[i]
    })))})
 }
-p(matrix(1:3,1,3),parms)
+p(matrix(1:6,2,3),parms)
 p <- compiler::cmpfun(p)
 #initialize
 #par(mfrow=c(2,2))
@@ -64,13 +64,11 @@ set.seed(1)
 mcmc <- aMTM(target = p, N = N, K = K,
              x0 = x0, sig0 = sig0, mu0 = mu0, lam0 = lam0,
              adapt = 2, global = T, scale = T, local = T,
-             proposal = 0, accrate = 0.30, gamma = 0.65,
+             proposal = 2, accrate = 0.50, gamma = 0.65,
              parms = parms, weight = 0, burnin=burnin)
 
 round(mix.compare(mcmc,parms,Sigma,mlda),3)
 #X <- matrix(mcmc$X,N,d)
-pairs(as.matrix(mcmc$X), col = mcmc$sel+1)
-#pairs(t(x))
-mcmc$Sig
-mcmc$X
-plot(mcmc$X)
+pairs(as.matrix(mcmc$X), col = mcmc$sel)
+mcmc$sel.prop
+mcmc$lam

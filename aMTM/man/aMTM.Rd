@@ -30,7 +30,8 @@ for AM and ASWAM updates. Default is \eqn{K} zero vectors.}
 
 \item{global}{Boolean value enabling the use of a global component that is updated at every iteration. Default is \code{FALSE}.}
 
-\item{scale}{Boolean value enabling the adaptation of the scale parameter of the proposals that were not selected. Default is \code{FALSE}.}
+\item{scale}{Boolean value enabling the adaptation of the scale parameter of the proposals that were not selected. It consists of 
+reducing the scale aprameter whenever the running selection proportion is below \eqn{0.1/K}. Default is \code{FALSE}.}
 
 \item{local}{Boolean value enabling the use of local update steps in AM or ASWAM updates. Default is \code{FALSE}.}
 
@@ -38,9 +39,9 @@ for AM and ASWAM updates. Default is \eqn{K} zero vectors.}
 \dQuote{common} or 1 produces candidates from a common random vectors, \dQuote{QMC} or 2 produces candidates by a 
 Randomized Quasi Monte Carlo procedure using a Koborov rule, \dQuote{EA} or 3 produces extremely antithetic candidates. Default is \code{"ind"}.}
 
-\item{accrate}{Target acceptance rate for ASWAM and RAM updates. Default is 0.234.}
+\item{accrate}{Target acceptance rate for ASWAM and RAM updates. Default is 0.5.}
 
-\item{gamma}{Power used to produce the adaptation step size : at iteration \code{n}, the stepsize is given by \code{n^-gamma}. Default is 0.7 and 
+\item{gamma}{Power used to produce the adaptation step size : at iteration \code{n}, the stepsize is given by \code{n^-gamma}. Default is 0.5 for RAM update and 0.7 otherwise and 
 the range of suggested values is \eqn{(0.5,1]} to meet theoritical guarantees while values in \eqn{(0,0.5]} are accepted but may yield weird behaviour.}
 
 \item{parms}{A list of paramters passed to the \code{target} function for evaluation.}
@@ -94,7 +95,8 @@ Second, the weights may take the form of importance weights (\code{weight="impor
 
 The adaptation of the parameters has different options. Unless no adaptation is performed, the update of the parameters of selected
 proposal density is performed at every iteration. If \code{global=TRUE}, then the first proposal density is updated at every iteration.
-If \code{scale=TRUE}, then all the scale parameters are adapted at every iterations. Now, the update of the parameters of a proposal may take one
+If \code{scale=TRUE}, then all the scale parameters are adapted at every iterations to prevent that some of the proposals are never used. 
+Now, the update of the parameters of a proposal may take one
 of three forms. First, the covariance \eqn{\Sigma^{(k)}}{Sigma^(k)} can be adapted by the AM update of Haario et al. (2001) while the scale
 parameter remains constant (\code{adapt="AM"} or \code{adapt=1}). Second, the scale parameter may be adapted to attain a target acceptance rate
 as described by the ASWAM algorithm of Andrieu and Thoms (2008) where the covariance is adapted as in the AM update and the scale parameter is 
@@ -108,8 +110,45 @@ In the context of adaptive MCMC using stochatic approximations to update the par
 satisfy some conditions. The algorithm uses \eqn{\gamma_n = n^{-\gamma}}{gamma_n=n^-gamma} for some parameter \eqn{\gamma}{gamma}. To insure 
 good behaviour of the algorithm, we require \eqn{0<\gamma\leq 1}{0<gamma<=1}, but \eqn{0.5<\gamma\leq 1}{0.5<gamma<=1} furthur garantees the 
 convergence of the parameters so that the transition stabilizes in the long run.
+
+The sampling and adaptation is done by a C++ core function to which this function is only a wrapper. The adaptation procedure rely on
+a rank one Cholesky update and downdate function taken from the RAMCMC package available at \url{http://github.com/helske/ramcmc}.
 }
 \examples{
+
+library(aMTM)
+# Banana log-density with parameter B and a
+p <- function(x, p) apply(x,1,function(x) -x[1]^2/(2*p$a^2) - 1/2*(x[2]+p$B*x[1]^2-p$B*p$a^2)^2)
+# setup
+set.seed(1)
+N<-1e5;K<-3
+B<-0.04;a<-8
+# aMTM sampling with ASWAM update
+mcmc <- aMTM(target=p, N=N, K=K, x0=c(0,0), parms=list(a=a,B=B), burnin=0.1)
+
+# acceptance rate (target is 0.5)
+mcmc$acc.rate
+
+# plot 1D samples
+plot(mcmc$X)
+# plot 2D sample
+plot(as.matrix(mcmc$X))
+# add the final covariances
+for(k in seq(K)) mixtools::ellipse(mcmc$mu[,k], mcmc$Sig[,,k]*mcmc$lam[k],alpha = 0.1, col=k)
+
+# estimate of the mean (true value is (0,0))
+colMeans(mcmc$X)
+# estimate of the variance and true value
+round(cov(mcmc$X),4)
+matrix(c(a^2,0,0,1+B^2*a^4*2),2,2,T)
+
+# estimation of the mean with MC standard error
+mcmcse::mcse.mat(mcmc$X)
+# asymptotic covariance of the estimator
+mcmcse::mcse.initseq(mcmc$X)$cov
+# multivariate effective sample size
+mcmcse::multiESS(mcmc$X)
+
 
 }
 \references{
@@ -121,6 +160,8 @@ antithetic and stratifed sampling". Statistics and computing, 17:2, 109.
 Fontaine, S. and Bedard, M. (2019). "An Adaptive Multiple-Try Metropolis algorithm". To be submitted.
 
 Haario, H., Saksman, E., Tamminen, J. et al. (2001). "An adaptive Metropolis algorithm". Bernoulli, 7:2, 223-242.
+
+Helske, J. (2018). "ramcmc: Robust Adaptive Metropolis Algorithm". R package version 0.1.0-1, \url{http://github.com/helske/ramcmc}.
 
 Liu, J.S., Liang, F. and Wong, W.H. (2000). "The Multiple-Try Method and Local Optimization in Metropolis Sampling". 
 Journal of the American Statistical Association, 95:449, 121-134.

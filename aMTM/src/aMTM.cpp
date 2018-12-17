@@ -7,8 +7,8 @@
 
 using namespace Rcpp;
 
-inline double evalTarget(Function target, arma::rowvec x, List parms) {
-   return as<double>( wrap( target(x, parms) ) );
+inline arma::vec evalTarget(Function target, arma::mat x, List parms) {
+   return as<arma::vec>( wrap( target(x, parms) ) );
 }
 // Both cholesky update and downdate are from the ramcmc package by Jouni Helske
 // https://github.com/helske/ramcmc/blob/master/inst/include/ramcmc.h
@@ -150,6 +150,7 @@ List aMTMsample(Function target,             // target density
    arma::vec lam;             //scale parameter
       lam = lam0;
    arma::cube S(d,d,K);       //square root of variances, itilialize to initial value
+   arma::vec tmpEval(K);      //temporary storage of target evaluation
    for(int k=0;k<K;k++){
       S.slice(k) = arma::chol(sig0.slice(k)).t();
    }
@@ -227,9 +228,10 @@ List aMTMsample(Function target,             // target density
       // compute the candidates and weights
          for(int k=0;k<K;k++){
             Y.col(k) = X.row(n-1).t() + sqrt(lam(k)) * S.slice(k) * U.col(k);
-            y = Y.col(k).t();
-            w(k) = evalTarget(target,y,parms);
-            w(k) = w(k) + beta * sum(-0.5*(log(2 * M_PI) + U.col(k)%U.col(k)));
+         }
+         tmpEval = evalTarget(target,Y.t(),parms);
+         for(int k=0;k<K;k++){
+            w(k) = tmpEval(k) + beta * sum(-0.5*(log(2 * M_PI) + U.col(k)%U.col(k)));
          }
          w = exp(w);
       // compute weights
@@ -280,9 +282,10 @@ List aMTMsample(Function target,             // target density
          for(int k=0;k<K;k++){
             if(k==s) Yt.col(k) = X.row(n-1).t();
             else Yt.col(k) = Y.col(s) + sqrt(lam(k)) * S.slice(k) * Ut.col(k);
-            y = Yt.col(k).t();
-            wt(k) = evalTarget(target,y,parms);
-            wt(k) = wt(k) + beta * sum(-0.5*(log(2 * M_PI) + Ut.col(k)%Ut.col(k)));
+         }
+         tmpEval = evalTarget(target,Yt.t(),parms);
+         for(int k=0;k<K;k++){
+            wt(k) = tmpEval(k) + beta * sum(-0.5*(log(2 * M_PI) + Ut.col(k)%Ut.col(k)));
          }
          wt = exp(wt);
          swt = sum(wt);
@@ -357,16 +360,17 @@ List aMTMsample(Function target,             // target density
             // adapt = 0 we do nothing
             }
          // adapt scaling of not selected if adaptation is enabled
-            // Sy[k] = Sy[k] + gam * (double(s==k) - 1.0/K);
-            if(n>100){
-               Sy(k) = 0.0;
-               for(int i = n-99;i<=n;i++){
-                  Sy(k) += (sel(i) == k)/100.0;
-               }
-            }
-            //if(Sy[k]<0.0)Sy[k]=0.0;
-            //if(Sy[k]>1.0)Sy[k]=1.0;
+            // Sy(k) = Sy(k) + gam * (double(s==k) - Sy(k));
+            Sy(k) = Sy(k) + gam * (wb(k) - Sy(k));
+            // if(n>100){
+            //    Sy(k) = 0.0;
+            //    for(int i = n-99;i<=n;i++){
+            //       Sy(k) += (sel(i) == k)/100.0;
+            //    }
+            // }
             if(s!=k && scale==1 && Sy(k) < 0.1/K){
+            // if(s!=k && scale==1 ){
+               // tmplam = exp(log(lam(k)) - gam * (1.0/K - Sy(k)));
                tmplam = exp(log(lam(k)) - gam );
                if(tmplam > 1.0e+6) tmplam = 1.0e+6;
                if(tmplam < 1.0e-6) tmplam = 1.0e-6;
