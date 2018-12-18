@@ -151,8 +151,10 @@ List aMTMsample(Function target,             // target density
       lam = lam0;
    arma::cube S(d,d,K);       //square root of variances, itilialize to initial value
    arma::vec tmpEval(K);      //temporary storage of target evaluation
+   arma::vec detSig(K);       //the determinants of the covariances
    for(int k=0;k<K;k++){
       S.slice(k) = arma::chol(sig0.slice(k)).t();
+      detSig(k) = pow(arma::det(S.slice(k)),2);
    }
    arma::mat U(d,K);          //standard normal vectors for candidates
       U.zeros();
@@ -231,7 +233,8 @@ List aMTMsample(Function target,             // target density
          }
          tmpEval = evalTarget(target,Y.t(),parms);
          for(int k=0;k<K;k++){
-            w(k) = tmpEval(k) + beta * sum(-0.5*(log(2 * M_PI) + U.col(k)%U.col(k)));
+            w(k) = tmpEval(k); //+ beta * (sum(-0.5*(log(2 * M_PI * lam(k)) + U.col(k)%U.col(k))) - 0.5 * detSig(k));
+            if(beta != 0.0) w(k) = w(k)-beta*0.5*(d*log(2.0*M_PI*lam(k)) +log(detSig(k)) + sum(U.col(k)%U.col(k)));
          }
          w = exp(w);
       // compute weights
@@ -285,7 +288,9 @@ List aMTMsample(Function target,             // target density
          }
          tmpEval = evalTarget(target,Yt.t(),parms);
          for(int k=0;k<K;k++){
-            wt(k) = tmpEval(k) + beta * sum(-0.5*(log(2 * M_PI) + Ut.col(k)%Ut.col(k)));
+            wt(k) = tmpEval(k); //+ beta * (sum(-0.5*(log(2 * M_PI * lam(k)) + U.col(k)%U.col(k))) - 0.5 * detSig(k));
+            if(beta != 0.0) wt(k) = wt(k) -beta*0.5*(d*log(2.0*M_PI*lam(k)) + log(detSig(k)) + sum(Ut.col(k)%Ut.col(k)));
+            //wt(k) = tmpEval(k) + beta * (sum(-0.5*(log(2 * M_PI * lam(k)) + Ut.col(k)%Ut.col(k))) - 0.5 * detSig(k));
          }
          wt = exp(wt);
          swt = sum(wt);
@@ -333,6 +338,7 @@ List aMTMsample(Function target,             // target density
                   if(tmpnorm > 1.0e+6){tmpS = tmpS * (1.0e+6 / tmpnorm);}
                   if(tmpnorm < 1.0e-6){tmpS = tmpS * (1.0e-6 / tmpnorm);}
                   S.slice(k) = tmpS;
+                  detSig(k) = pow(arma::det(S.slice(k)),2);
                // update the scaling parameter if ASWAM
                   if(adapt == 2){
                      tmplam = exp(log(lam(k)) + gam * (a-accrate));
@@ -356,6 +362,7 @@ List aMTMsample(Function target,             // target density
                   if(tmpnorm > 1.0e+6){tmpS = tmpS * (1.0e+6 / tmpnorm);}
                   if(tmpnorm < 1.0e-6){tmpS = tmpS * (1.0e-6 / tmpnorm);}
                   S.slice(k) = tmpS;
+                  detSig(k) = pow(arma::det(S.slice(k)),2);
                }
             // adapt = 0 we do nothing
             }

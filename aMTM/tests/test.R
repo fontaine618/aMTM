@@ -49,7 +49,7 @@ p(matrix(1:6,2,3),parms)
 p <- compiler::cmpfun(p)
 #initialize
 #par(mfrow=c(2,2))
-K <- 4
+K <- 3
 x0 = rnorm(d, 0,5)
 sig0 = array(0, dim = c(d,d,K))
 for(k in seq(K)){
@@ -63,12 +63,13 @@ library(aMTM)
 set.seed(1)
 mcmc <- aMTM(target = p, N = N, K = K,
              x0 = x0, sig0 = sig0, mu0 = mu0, lam0 = lam0,
-             adapt = 2, global = T, scale = T, local = T,
-             proposal = 2, accrate = 0.50, gamma = 0.65,
-             parms = parms, weight = 0, burnin=burnin)
+             adapt = 2, global =T, scale = T, local = T,
+             proposal = 0, accrate = 0.50, gamma = 0.65,
+             parms = parms, weight = 1, burnin=burnin)
 
 round(mix.compare(mcmc,parms,Sigma,mlda),3)
 #X <- matrix(mcmc$X,N,d)
 pairs(as.matrix(mcmc$X), col = mcmc$sel)
 mcmc$sel.prop
 mcmc$lam
+mcmc$Sig
