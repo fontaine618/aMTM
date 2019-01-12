@@ -8,6 +8,12 @@ B<-0.04;a<-8
 # aMTM sampling with ASWAM update
 mcmc <- aMTM(target=p, N=N, K=K, x0=c(0,0), parms=list(a=a,B=B), burnin=0.1)
 
+
+
+#######################
+# for aMTM
+
+
 # acceptance rate (target is 0.5)
 mcmc$acc.rate
 
@@ -30,3 +36,22 @@ mcmcse::mcse.mat(mcmc$X)
 mcmcse::mcse.initseq(mcmc$X)$cov
 # multivariate effective sample size
 mcmcse::multiESS(mcmc$X)
+
+
+
+
+
+#######################
+# for plot.aMTM
+
+#plot the pairs showing color
+plot.aMTM(mcmc, color=T)
+#plot the pairs showing jumps and color
+plot.aMTM(mcmc, type='l', color=T)
+#plot the marginals with colors
+plot.aMTM(mcmc, pairs=F, color=T)
+
+
+#######################
+# for stats.aMTM
+stats.aMTM(mcmc)

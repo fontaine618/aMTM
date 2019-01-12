@@ -213,7 +213,7 @@ aMTM <- function(target,N,K,x0,...) {
       if(is.null(opt$accrate)) opt$accrate <- 0.5
       if(opt$accrate <= 0 || opt$accrate >= 1) stop("accrate must be between 0 and 1.")
       # Check power for adaptation step
-      if(is.null(opt$gamma)) opt$gamma <- ifelse(out$proposal == 3, 0.5, 0.7)
+      if(is.null(opt$gamma)) opt$gamma <- ifelse(opt$proposal == 3, 0.5, 0.7)
       if(opt$gamma < 0 || opt$gamma > 1) stop("gamma must be between 0 and 1.")
       if(opt$gamma < 0.5) warning("We suggest using gamma between 0.5 and 1 to meet theoritical guarantees.")
       # Check weight function
@@ -234,8 +234,9 @@ aMTM <- function(target,N,K,x0,...) {
    #-----------------------------------
    # OUTPUT
    X <- coda::mcmc(out$X[seq(Nt-N+1,Nt),])
-   acc.rate <- mean(out$acc)
+   sel <- out$sel[seq(Nt-N+1,Nt),]
+   acc.rate <- mean(out$acc[seq(Nt-N+1,Nt)])
    sel.prop <- table(out$sel[seq(Nt-N+1,Nt)])/N
    names(sel.prop) <- as.integer(names(sel.prop)) +1 
-   list(X=X,acc.rate=acc.rate,sel.prop=sel.prop,mu=out$mu,lam=out$lam,Sig=out$Sig,sel=out$sel+1,time=time)
+   list(X=X,acc.rate=acc.rate,sel.prop=sel.prop,mu=out$mu,lam=as.vector(out$lam),Sig=out$Sig,sel=sel+1,time=time)
 }

@@ -65,7 +65,7 @@ mcmc <- aMTM(target = p, N = N, K = K,
              x0 = x0, sig0 = sig0, mu0 = mu0, lam0 = lam0,
              adapt = 2, global =T, scale = T, local = T,
              proposal = 0, accrate = 0.50, gamma = 0.65,
-             parms = parms, weight = 1, burnin=burnin)
+             parms = parms, weight = 0, burnin=burnin)
 
 round(mix.compare(mcmc,parms,Sigma,mlda),3)
 #X <- matrix(mcmc$X,N,d)
@@ -73,3 +73,60 @@ pairs(as.matrix(mcmc$X), col = mcmc$sel)
 mcmc$sel.prop
 mcmc$lam
 mcmc$Sig
+
+
+
+#########################################
+# TEST plot.aMTM
+plot.aMTM(mcmc)
+
+stats.aMTM(mcmc)
+
+
+
+
+
+
+
+#########################################
+# Function for camparison with mixture target
+
+mix.compare <- function(mcmc,parms,Sigma,mlda){
+   X <- mcmc$X
+   M <- parms$M
+   #mean squared (euclidian) jump distance
+   dif <- diff(X)
+   msjd <- mean(sqrt(apply(dif^2,1,sum)))
+   if(missing(Sigma)) Sigma <- var(X)
+   Sigmainv <- solve(Sigma)
+   msejd <-  mean(sqrt( apply(dif, 1, function(row) row %*% Sigmainv %*% row) ))
+   #autocorrelation time of the mean
+   SigmaP <- mcmcse::mcse.multi(X)$cov
+   S <- t(chol(Sigma))
+   Sinv <- solve(S)
+   ACT <- Sinv %*% SigmaP %*% t(Sinv)
+   act <- sqrt(sum(ACT^2))#frobenius of ACT
+   #multivariate ESS
+   ess <- mcmcse::multiESS(X)
+   #bias of the mean in mahalanobis distance
+   m.exp <- apply(X,2,mean)
+   m.true <- apply(parms$mu,1,mean)
+   mean.dist <- mahalanobis(m.exp, m.true, Sigma)
+   if(!missing(mlda)){
+      #mlda (suppress warnings beacause col names may be wrong)
+      suppressWarnings(pred <- predict(mlda, X))
+      prop <- table(pred$class)/nrow(X)
+      miss.mode <- sum(abs(prop - mlda$counts/mlda$N))/2
+      #TV distance
+      dist.TV <- max(abs(prop - mlda$counts/mlda$N))
+   }else{
+      miss.mode=NA
+      dist.TV=NA
+   }
+   
+   #output
+   c(time=mcmc$time,msjd = msjd,
+     msejd = msejd,act = act, ess=ess,
+     dist.mean = mean.dist, miss.mode = miss.mode * M,
+     dist.TV = dist.TV,acc.rate = mcmc$acc.rate)
+}
