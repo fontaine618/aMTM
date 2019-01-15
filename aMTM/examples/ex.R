@@ -54,4 +54,4 @@ plot.aMTM(mcmc, pairs=F, color=T)
 
 #######################
 # for stats.aMTM
-stats.aMTM(mcmc)
+stats.aMTM(mcmc$X)

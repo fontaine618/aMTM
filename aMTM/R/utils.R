@@ -183,7 +183,7 @@ plot.aMTM <- function(aMTMobject, vars, type, color, pairs, prop.density, ...){
 #' \item{\code{msejd}}{The Mean Sqaured Euclidian Jumping Distance.}
 #' \item{\code{msjd}}{The Mean Sqaured Jumping Distance (using the sample variance in the Mahalanobis distance).}
 #' \item{\code{act}}{The Frobenius norm of the multivariate ACT of the chain.}
-#' \item{\code{ess}}{The multivariate ESS of the chain as described by Vatset al. (2015).}
+#' \item{\code{ess}}{The multivariate ESS of the chain as described by Vats et al. (2015).}
 #' 
 #' 
 #' @author Simon Fontaine, \email{fontaines@@dms.umontreal.ca}
