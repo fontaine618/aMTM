@@ -150,7 +150,8 @@ List aMTMsample(Function target,             // target density
    arma::vec lam;             //scale parameter
       lam = lam0;
    arma::cube S(d,d,K);       //square root of variances, itilialize to initial value
-   arma::vec tmpEval(K);      //temporary storage of target evaluation
+   arma::vec tmpEval(K);
+   arma::vec tmpEval2(K-1);   //temporary storage of target evaluation
    arma::vec detSig(K);       //the determinants of the covariances
    for(int k=0;k<K;k++){
       S.slice(k) = arma::chol(sig0.slice(k)).t();
@@ -163,6 +164,8 @@ List aMTMsample(Function target,             // target density
    arma::mat Y(d,K);          //candidates
       Y.zeros();
    arma::mat Yt(d,K);         //reference points
+      Yt.zeros();
+   arma::mat Ytmp(d,K-1);     //reference points
       Yt.zeros();
    arma::vec u(d);            //uniform vector for PIT
       u.zeros();
@@ -233,7 +236,7 @@ List aMTMsample(Function target,             // target density
          }
          tmpEval = evalTarget(target,Y.t(),parms);
          for(int k=0;k<K;k++){
-            w(k) = tmpEval(k); //+ beta * (sum(-0.5*(log(2 * M_PI * lam(k)) + U.col(k)%U.col(k))) - 0.5 * detSig(k));
+            w(k) = tmpEval(k); 
             if(beta != 0.0) w(k) = w(k)-beta*0.5*(d*log(2.0*M_PI*lam(k)) +log(detSig(k)) + sum(U.col(k)%U.col(k)));
          }
          w = exp(w);
@@ -286,11 +289,24 @@ List aMTMsample(Function target,             // target density
             if(k==s) Yt.col(k) = X.row(n-1).t();
             else Yt.col(k) = Y.col(s) + sqrt(lam(k)) * S.slice(k) * Ut.col(k);
          }
-         tmpEval = evalTarget(target,Yt.t(),parms);
+         //remov the sth column
+         j=0;
          for(int k=0;k<K;k++){
-            wt(k) = tmpEval(k); //+ beta * (sum(-0.5*(log(2 * M_PI * lam(k)) + U.col(k)%U.col(k))) - 0.5 * detSig(k));
+            if(k!=s){
+               Ytmp.col(j) = Yt.col(k);
+               j++;
+            }
+         }
+         tmpEval2 = evalTarget(target,Ytmp.t(),parms);
+         j=0;
+         for(int k=0;k<K;k++){
+            if(k!=s){
+               wt(k) = tmpEval2(j);
+               j++;
+            }else{
+               wt(k) = tmpEval(s);
+            }
             if(beta != 0.0) wt(k) = wt(k) -beta*0.5*(d*log(2.0*M_PI*lam(k)) + log(detSig(k)) + sum(Ut.col(k)%Ut.col(k)));
-            //wt(k) = tmpEval(k) + beta * (sum(-0.5*(log(2 * M_PI * lam(k)) + Ut.col(k)%Ut.col(k))) - 0.5 * detSig(k));
          }
          wt = exp(wt);
          swt = sum(wt);

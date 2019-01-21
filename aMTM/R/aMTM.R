@@ -226,10 +226,10 @@ aMTM <- function(target,N,K,x0,...) {
       Nt <- ceiling(N/(1-opt$burnin))
    #-----------------------------------
    # CALL C++
-   t0<-proc.time()[1]
+   t0<-proc.time()[3]
    out<-aMTMsample(target,Nt,d,K,x0,opt$sig0,opt$mu0,opt$lam0,opt$adapt,opt$global,
                    opt$scale,opt$local,opt$proposal,opt$accrate,opt$gamma,opt$parms,opt$weight)
-   time <- proc.time()[1]-t0
+   time <- proc.time()[3]-t0
    names(out) <- c('X','sel','acc','mu','Sig','lam')
    #-----------------------------------
    # OUTPUT

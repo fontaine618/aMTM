@@ -63,8 +63,8 @@ library(aMTM)
 set.seed(1)
 mcmc <- aMTM(target = p, N = N, K = K,
              x0 = x0, sig0 = sig0, mu0 = mu0, lam0 = lam0,
-             adapt = 2, global =T, scale = T, local = T,
-             proposal = 0, accrate = 0.50, gamma = 0.65,
+             adapt = 2, global =F, scale = F, local =T,
+             proposal = 0, accrate = 0.50, gamma = 0.7,
              parms = parms, weight = 0, burnin=burnin)
 
 round(mix.compare(mcmc,parms,Sigma,mlda),3)
@@ -74,13 +74,13 @@ mcmc$sel.prop
 mcmc$lam
 mcmc$Sig
 
-
+pairs(t(x))
 
 #########################################
 # TEST plot.aMTM
 plot.aMTM(mcmc)
 
-stats.aMTM(mcmc)
+stats.aMTM(mcmc$X)
 
 
 
