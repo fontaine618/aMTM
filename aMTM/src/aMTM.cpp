@@ -289,25 +289,30 @@ List aMTMsample(Function target,             // target density
             if(k==s) Yt.col(k) = X.row(n-1).t();
             else Yt.col(k) = Y.col(s) + sqrt(lam(k)) * S.slice(k) * Ut.col(k);
          }
-         //remov the sth column
-         j=0;
+         tmpEval = evalTarget(target,Yt.t(),parms);
          for(int k=0;k<K;k++){
-            if(k!=s){
-               Ytmp.col(j) = Yt.col(k);
-               j++;
-            }
-         }
-         tmpEval2 = evalTarget(target,Ytmp.t(),parms);
-         j=0;
-         for(int k=0;k<K;k++){
-            if(k!=s){
-               wt(k) = tmpEval2(j);
-               j++;
-            }else{
-               wt(k) = tmpEval(s);
-            }
+            wt(k) = tmpEval(k);
             if(beta != 0.0) wt(k) = wt(k) -beta*0.5*(d*log(2.0*M_PI*lam(k)) + log(detSig(k)) + sum(Ut.col(k)%Ut.col(k)));
          }
+         //remov the sth column
+         // j=0;
+         // for(int k=0;k<K;k++){
+         //    if(k!=s){
+         //       Ytmp.col(j) = Yt.col(k);
+         //       j++;
+         //    }
+         // }
+         // tmpEval2 = evalTarget(target,Ytmp.t(),parms);
+         // j=0;
+         // for(int k=0;k<K;k++){
+         //    if(k!=s){
+         //       wt(k) = tmpEval2(j);
+         //       j++;
+         //    }else{
+         //       wt(k) = tmpEval(s);
+         //    }
+         //    if(beta != 0.0) wt(k) = wt(k) -beta*0.5*(d*log(2.0*M_PI*lam(k)) + log(detSig(k)) + sum(Ut.col(k)%Ut.col(k)));
+         // }
          wt = exp(wt);
          swt = sum(wt);
       // MTM acceptatance probability

@@ -120,11 +120,11 @@ plot.aMTM <- function(aMTMobject, vars, type, color, pairs, prop.density, ...){
             # off diagonal we plot the pairs
                plot(NA, xlim = ranges[,j], ylim = ranges[,i], 
                     xaxt = 'n', yaxt = 'n', xlab = '', ylab = '')
-            # we plot the ticks on even top left, odd bottom right
-               if(i==vars[1] & j%%2 == 0) axis(side=3)
-               if(j==vars[1] & i%%2 == 0) axis(side=2)
-               if(i==vars[np] & j%%2 == 1) axis(side=1)
-               if(j==vars[np] & i%%2 == 1) axis(side=4)
+            # # we plot the ticks on even top left, odd bottom right
+            #    if(i==vars[1] & j%%2 == 0) axis(side=3)
+            #    if(j==vars[1] & i%%2 == 0) axis(side=2)
+            #    if(i==vars[np] & j%%2 == 1) axis(side=1)
+            #    if(j==vars[np] & i%%2 == 1) axis(side=4)
                if(type=='p' | (type == 'b' & j<i) )points(X[,c(j,i)], col = cols)
                if(type=='l' | (type == 'b' & j>i) ){
                   segments(x0 = as.vector(X[-N,j]),
@@ -140,6 +140,11 @@ plot.aMTM <- function(aMTMobject, vars, type, color, pairs, prop.density, ...){
                                                      alpha = 0.1, col=k)
                }
             }#end off diagonal
+            #axis
+            if(i==vars[1] & j%%2 == 0) axis(side=3)
+            if(j==vars[1] & i%%2 == 0) axis(side=2)
+            if(i==vars[np] & j%%2 == 1) axis(side=1)
+            if(j==vars[np] & i%%2 == 1) axis(side=4)
          }#end j loop
       }#end i loop
    }else{
@@ -177,6 +182,8 @@ plot.aMTM <- function(aMTMobject, vars, type, color, pairs, prop.density, ...){
 #' Summary statistics for the output chain of an aMTM object.
 #' 
 #' @param X A matrix coresponding to the outpout of a MCMC algorithm.
+#' 
+#' @param cov A covariance matrix to compute the MSEJD with. Default is \code{NULL} and uses the sample covariance.
 #'
 #' @return A vector containing the following statistics:
 #' 
@@ -209,17 +216,26 @@ plot.aMTM <- function(aMTMobject, vars, type, color, pairs, prop.density, ...){
 #' mcmc <- aMTM(target=p, N=N, K=K, x0=c(0,0), parms=list(a=a,B=B), burnin=0.1)
 #' 
 #' stats.aMTM(mcmc$X)
+#' 
+#' stats.aMTM(mcmc$X, diag(1:2))
 #'
 #' @export
 #'
 
-stats.aMTM <- function(X){
+stats.aMTM <- function(X, cov = NULL){
    #mean squared (euclidian) jump distance
    dif <- diff(X)
-   msejd <- mean(sqrt(apply(dif^2,1,sum)))
-   Sigma <- var(X)
+   msjd <- mean(sqrt(apply(dif^2,1,sum)))
+   if(is.null(cov)) {
+      Sigma <- var(X)
+   }else{
+      if(any(dim(cov) != ncol(X))) stop("cov must have the same dimension as X")
+      if(any(abs(cov - t(cov))>1e-10)) stop("cov must be symmetric")
+      if(any(eigen(cov)$values<1e-10)) stop("cov must be positive definite")
+      Sigma <- cov
+   }
    Sigmainv <- solve(Sigma)
-   msjd <-  mean(sqrt( apply(dif, 1, function(row) row %*% Sigmainv %*% row) ))
+   msejd <-  mean(sqrt( apply(dif, 1, function(row) row %*% Sigmainv %*% row) ))
    #autocorrelation time of the mean
    SigmaP <- mcmcse::mcse.multi(X)$cov
    S <- t(chol(Sigma))
@@ -227,7 +243,12 @@ stats.aMTM <- function(X){
    ACT <- Sinv %*% SigmaP %*% t(Sinv)
    act <- sqrt(sum(ACT^2))#frobenius of ACT
    #multivariate ESS
-   ess <- mcmcse::multiESS(X)
+   # ess <- mcmcse::multiESS(X, cov) does not allow user supplied covariance...
+   p <- ncol(X)
+   N <- nrow(X)
+   det.var.p <- prod(eigen(Sigma, only.values = TRUE)$values^(1/p))
+   det.covmat.p <- prod(eigen(SigmaP, only.values = TRUE)$values^(1/p))
+   ess <- N * (det.var.p/det.covmat.p)
    #output
    round(c(msejd = msejd, msjd = msjd,act = act, ess=ess),3)
 }
