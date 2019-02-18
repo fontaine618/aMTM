@@ -45,7 +45,7 @@ performance.aMTM <- function(X, Sigma, f, f.true, time, NbEval, mlda){
    errorAbs <- abs(Xf-f.true)
    errorRel <- errorAbs/abs(f.true)
    #output
-   list(stats=stats, errorAbs=errorAbs, errorRel=errorRel, dist.TV=dist.TV)
+   list(stats, dist.TV=dist.TV, errorAbs=errorAbs, errorRel=errorRel)
 }
 
 # WRAPPER FOR expand.grid TO DATA FRAME with default values for non-specifed things

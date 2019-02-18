@@ -184,7 +184,7 @@ plot.aMTM <- function(aMTMobject, vars, type, color, pairs, prop.density, ...){
 #' @param X A matrix coresponding to the outpout of a MCMC algorithm.
 #' 
 #' @param cov A covariance matrix to compute the MSEJD with. Default is \code{NULL} and uses the sample covariance.
-#'
+#' 
 #' @return A vector containing the following statistics:
 #' 
 #' \item{\code{msejd}}{The Mean Sqaured Euclidian Jumping Distance.}
