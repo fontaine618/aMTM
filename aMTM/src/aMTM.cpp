@@ -396,7 +396,7 @@ List aMTMsample(Function target,             // target density
             //       Sy(k) += (sel(i) == k)/100.0;
             //    }
             // }
-            if(s!=k && scale==1 && Sy(k) < 0.1/K){
+            if(s!=k && scale==1 && Sy(k) < 0.1/K && adapt>0){
             // if(s!=k && scale==1 ){
                // tmplam = exp(log(lam(k)) - gam * (1.0/K - Sy(k)));
                tmplam = exp(log(lam(k)) - gam );
