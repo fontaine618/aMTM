@@ -346,7 +346,7 @@ List aMTMsample(Function target,             // target density
                         u = (X.row(n).t() - mu.col(k));
                         tmpmu = mu.col(k) + gam * u;
                         tmpnorm = arma::norm(tmpmu, 2);
-                        if(tmpnorm > 1.0e+6){tmpmu = tmpmu * (1.0e+6 / tmpnorm);}
+                        if(tmpnorm > 1.0e+100){tmpmu = tmpmu * (1.0e+100 / tmpnorm);}
                         mu.col(k) = tmpmu;
                         break;
                   }
@@ -356,15 +356,15 @@ List aMTMsample(Function target,             // target density
                   chol_update(tmpS,u);
                   tmpS = tmpS*sqrt(1.0-gam);
                   tmpnorm = arma::norm(tmpS, "fro");
-                  if(tmpnorm > 1.0e+6){tmpS = tmpS * (1.0e+6 / tmpnorm);}
-                  if(tmpnorm < 1.0e-6){tmpS = tmpS * (1.0e-6 / tmpnorm);}
+                  if(tmpnorm > 1.0e+100){tmpS = tmpS * (1.0e+100 / tmpnorm);}
+                  if(tmpnorm < 1.0e-100){tmpS = tmpS * (1.0e-100 / tmpnorm);}
                   S.slice(k) = tmpS;
                   detSig(k) = pow(arma::det(S.slice(k)),2);
                // update the scaling parameter if ASWAM
                   if(adapt == 2){
                      tmplam = exp(log(lam(k)) + gam * (a-accrate));
-                     if(tmplam > 1.0e+6){tmplam = 1.0e+6;}
-                     if(tmplam < 1.0e-6){tmplam = 1.0e-6;}
+                     if(tmplam > 1.0e+100){tmplam = 1.0e+100;}
+                     if(tmplam < 1.0e-100){tmplam = 1.0e-100;}
                      lam(k) = tmplam;
                   }
                }
@@ -380,8 +380,8 @@ List aMTMsample(Function target,             // target density
                   else chol_downdate(tmpS,u);
                   if(any(tmpS.diag())<1e-7) {tmpS.diag() += 1e-7;}
                   tmpnorm = arma::norm(tmpS, "fro");
-                  if(tmpnorm > 1.0e+6){tmpS = tmpS * (1.0e+6 / tmpnorm);}
-                  if(tmpnorm < 1.0e-6){tmpS = tmpS * (1.0e-6 / tmpnorm);}
+                  if(tmpnorm > 1.0e+100){tmpS = tmpS * (1.0e+100 / tmpnorm);}
+                  if(tmpnorm < 1.0e-100){tmpS = tmpS * (1.0e-100 / tmpnorm);}
                   S.slice(k) = tmpS;
                   detSig(k) = pow(arma::det(S.slice(k)),2);
                }
@@ -400,8 +400,8 @@ List aMTMsample(Function target,             // target density
             // if(s!=k && scale==1 ){
                // tmplam = exp(log(lam(k)) - gam * (1.0/K - Sy(k)));
                tmplam = exp(log(lam(k)) - gam );
-               if(tmplam > 1.0e+6) tmplam = 1.0e+6;
-               if(tmplam < 1.0e-6) tmplam = 1.0e-6;
+               if(tmplam > 1.0e+100) tmplam = 1.0e+100;
+               if(tmplam < 1.0e-100) tmplam = 1.0e-100;
                lam(k) = tmplam;
             }
          }
