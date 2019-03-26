@@ -184,7 +184,8 @@ List aMTMsample(Function target,             // target density
    // SPECIFIC INITIALIZATIONS AND PRECOMPUTATIONS FOR ADAPTATION
    //for QMC
    boost::math::normal norm;  //normal distribution object
-   int ai = floor(2*K/3);       //Koborov integer parameter
+   //int ai = floor(2*K/3);       //Koborov integer parameter
+   int ai = 1;       //Koborov integer parameter
    arma::vec Ua(d);           //base vector for Koborov rule (others are multiple of this one and mod1)
    if(proposal == 2){
       for(int i=0;i<d;i++)Ua(i) = pow(ai,i) /K;
