@@ -220,7 +220,9 @@ List aMTMsample(Function target,             // target density
             u = arma::randu(d);
             for(int k=0;k<K;k++){
                U.col(k) = (u + k*Ua) - floor(u + k*Ua);
-               for(arma::uword i=0; i < u.n_elem;i++) U(i,k) = quantile(norm,U(i,k));
+               for(arma::uword i=0; i < u.n_elem;i++) {
+                  U(i,k) = quantile(norm, std::max(U(i,k), 1e-6));
+               }
             }
             break;
          case 3:
@@ -269,7 +271,9 @@ List aMTMsample(Function target,             // target density
             //QMC
             for(int k=0;k<K;k++){
                Ut.col(k) = (-U.col(s) + k*Ua) - floor(-U.col(s) + k*Ua);
-               for(arma::uword i=0; i < u.n_elem;i++) Ut(i,k) = quantile(norm,Ut(i,k));
+               for(arma::uword i=0; i < u.n_elem;i++) {
+                  Ut(i,k) = quantile(norm, std::max(Ut(i,k),1e-6));
+               }
             }
             break;
          case 3:
