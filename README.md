@@ -169,7 +169,7 @@ We provide a graping function that can help visualizing the behavior of the diff
 plot.aMTM(mcmc, pairs=F)
 ```
 
-![Trace plots](figs/motiv_trace_plots.pdf)
+![Trace plots](figs/motiv_trace_plots.png)
 
 or plots of the pairwise marginals
 
@@ -177,7 +177,7 @@ or plots of the pairwise marginals
 plot.aMTM(mcmc, type='b')
 ```
 
-![Pair plots](figs/motiv_pairs_plots.pdf)
+![Pair plots](figs/motiv_pairs_plots.png)
 
 ## Built with
 
