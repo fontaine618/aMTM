@@ -18,8 +18,8 @@ Sig1 <- matrix(c(9,0,0,1),2,2,T)
 Sig2 <- matrix(c(1,0,0,9),2,2,T)
 S1 <- solve(Sig1)
 S2 <- solve(Sig2)
-d1 <- (4*3.1416*det(Sig1))^-0.5
-d2 <- (4*3.1416*det(Sig2))^-0.5
+d1 <- (det(2*pi*Sig1))^-0.5
+d2 <- (det(2*pi*Sig2))^-0.5
 w1 <- 0.3
 w2 <- 1-w1
 pi <- function(x){
