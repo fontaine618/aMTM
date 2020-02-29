@@ -1,0 +1,18 @@
+Package: aMTM
+Type: Package
+Title: Adaptive Multiple-Try Metropolis Algorithm
+Version: 0.1.0
+Author: c(person("Simon", "Fontaine", role = "aut", email = "fontaines@dms.umontreal.ca"))
+Maintainer: Simon Fontaine <fontaines@dms.umontreal.ca>
+Description: Produces a Monte Carlo sample from a continuous distribution of a random vector using a Markov Chain Monte Carlo (MCMC) algorithm. In particular, an adaptive version of the Multiple-Try Metropolis algorithm of Liu at al. (2001) is implemented: details of the algorithm can be found in Fontaine and Bedard (2019). The sample can then be used to perform a Monte Carlo estimation of the expectation of a function of the random vector and standard MCMC techniques can be done (standard error estimation, diagnostic of convergence, etc.).
+License: GPL-2
+URL: https://github.com/fontaine618/aMTM/
+Repository: GitHub
+Depends: BH, RcppArmadillo
+NeedsCompilation: Yes
+Encoding: UTF-8
+LazyData: true
+Suggests: coda, mcmcse, mixtools
+Imports: Rcpp (>= 0.12.15), RcppArmadillo, BH, coda
+LinkingTo: Rcpp, RcppArmadillo, BH
+RoxygenNote: 6.1.1
