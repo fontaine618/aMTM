@@ -1,6 +1,7 @@
-#' Adaptive Multiple-Try Metropolis algorithm
+#' 
+#' @title Adaptive Multiple-Try Metropolis algorithm
 #'
-#' This function performs the Adaptive Multiple-Try Metropolis algorithm as described in Fontaine and Bedard (2019). 
+#' @description This function performs the Adaptive Multiple-Try Metropolis algorithm as described in Fontaine and Bedard (2019). 
 #' The sampling step is performed via a MTM algorithm with \eqn{K} gaussian proposals which may be correlated (see argument \code{proposal} and details) 
 #' and using either weights that are proportional to the target density or importance weights. The adaptation step is performed
 #' via one of AM, ASWAM or RAM updates of the selected proposal density; a global component may also be adapted at each iteration 
@@ -8,6 +9,8 @@
 #' ASWAM update may be done using local steps rather than global steps (see argument \code{local} and details).
 #' 
 #' @useDynLib aMTM
+#'
+#' @export
 #' 
 #' @importFrom Rcpp evalCpp
 #' 
@@ -93,6 +96,8 @@
 #' The sampling and adaptation is done by a C++ core function to which this function is only a wrapper. The adaptation procedure rely on
 #' a rank one Cholesky update and downdate function taken from the RAMCMC package available at \url{http://github.com/helske/ramcmc}.
 #'
+#' @seealso [plot.aMTM()] for plotting and [stats.aMTM()] for summaries.
+#'
 #' @author Simon Fontaine, \email{fontaines@@dms.umontreal.ca}
 #' 
 #' @references 
@@ -148,9 +153,6 @@
 #' # multivariate effective sample size
 #' mcmcse::multiESS(mcmc$X)
 #' 
-#'
-#' @export
-#'
 
 
 aMTM <- function(target,N,K,x0,...) {

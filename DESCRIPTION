@@ -12,7 +12,11 @@ Depends: BH, RcppArmadillo
 NeedsCompilation: Yes
 Encoding: UTF-8
 LazyData: true
-Suggests: coda, mcmcse, mixtools
+Suggests: 
+    coda,
+    mcmcse,
+    mixtools,
+    testthat (>= 2.1.0)
 Imports: Rcpp (>= 0.12.15), RcppArmadillo, BH, coda
 LinkingTo: Rcpp, RcppArmadillo, BH
 RoxygenNote: 6.1.1

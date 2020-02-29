@@ -149,7 +149,6 @@ mcmcse::mcse.initseq(mcmc$X)$cov
 # multivariate effective sample size
 mcmcse::multiESS(mcmc$X)
 
-
 }
 \references{
 Andrieu, C. and Thoms, J. (2008). "A tutorial on adaptive MCMC". Statistics and computing, 18:4, 343-373.
@@ -167,6 +166,9 @@ Liu, J.S., Liang, F. and Wong, W.H. (2000). "The Multiple-Try Method and Local O
 Journal of the American Statistical Association, 95:449, 121-134.
 
 Vihola, M. (2012). "Robust adaptive Metropolis algorithm with coerced acceptance rate". Statistics and Computing, 22:5, 997-1008.
+}
+\seealso{
+[plot.aMTM()] for plotting and [stats.aMTM()] for summaries.
 }
 \author{
 Simon Fontaine, \email{fontaines@dms.umontreal.ca}
