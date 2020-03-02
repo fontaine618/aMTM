@@ -24,12 +24,12 @@
 #' 1-D marginal densities are plotted. When \code{pairs=FALSE}, the trace plot and the 1-D marginal plot are produced for each varaibles in 
 #' \code{vars}.
 #'
-#' @author Simon Fontaine, \email{fontaines@@dms.umontreal.ca}
+#' @author Simon Fontaine, \email{simfont@@umich.edu}
 #' 
-#' @seealso [aMTM()].
+#' @seealso \link{aMTM}.
 #'
 #' @examples
-#' 
+#' \dontrun{
 #' library(aMTM)
 #' # Banana log-density with parameter B and a
 #' p <- function(x, p) apply(x,1,function(x) -x[1]^2/(2*p$a^2) - 1/2*(x[2]+p$B*x[1]^2-p$B*p$a^2)^2)
@@ -46,7 +46,7 @@
 #' plot.aMTM(mcmc, type='l', color=T)
 #' #plot the marginals with colors
 #' plot.aMTM(mcmc, pairs=F, color=T)
-#'
+#'}
 
 
 plot.aMTM <- function(aMTMobject, vars, type, color, pairs, prop.density, ...){
@@ -61,7 +61,7 @@ plot.aMTM <- function(aMTMobject, vars, type, color, pairs, prop.density, ...){
    #... are additionnal graphical parameters
    
    X <- aMTMobject$X
-   K <- length(aMTMobject$sel.prop)
+   K <- length(aMTMobject$lam)
    #check that vars is subset of all possible vars
    if(missing(vars)) vars <- seq(ncol(X))
    if(any(!vars %in% seq(ncol(aMTMobject$X)))) stop('vars must be a subset of the possible range of dimensions')
@@ -72,6 +72,7 @@ plot.aMTM <- function(aMTMobject, vars, type, color, pairs, prop.density, ...){
    vars <- vars[order(vars)]
    np <- length(vars)
    N <- nrow(X)
+   p <- ncol(X)
    #check other input
    if(missing(type)) type <- 'p'
    if(!type %in% c('l','p','b')) stop('type must be either l, p or b')
@@ -87,8 +88,12 @@ plot.aMTM <- function(aMTMobject, vars, type, color, pairs, prop.density, ...){
       #this is a p*K matrix
       mu <- sapply(seq(K), function(k){
          ids <- which(aMTMobject$sel == k)-1
-         if(ids[1] == 0)ids <- ids[-1]
-         colMeans(X[ids,])
+         if(length(ids) > 2){
+            if(ids[1] == 0) ids <- ids[-1]
+            colMeans(X[ids,])
+         }else{
+            rep(0, p)
+         }
       }, simplify = 'array')
    }
    #precompute colors
@@ -98,7 +103,6 @@ plot.aMTM <- function(aMTMobject, vars, type, color, pairs, prop.density, ...){
       cols <- rep(1,N)
    }
    #ranges in a 2*p matrix
-   p <- ncol(X)
    ranges <- sapply(seq(p), function(j) range(X[,j]), simplify='array')
    
    #the two cases are given by pairs
@@ -138,8 +142,12 @@ plot.aMTM <- function(aMTMobject, vars, type, color, pairs, prop.density, ...){
                if(prop.density){
                   #for(k in seq(K)) points(x=mu[j,k], y=mu[i,k], pch=19, col=1, cex=1.5)
                   #for(k in seq(K)) points(x=mu[j,k], y=mu[i,k], pch=19, col=k, cex=1.2)
-                  for(k in seq(K)) mixtools::ellipse(mu[c(j,i),k], aMTMobject$Sig[c(j,i),c(j,i),k]*aMTMobject$lam[k],
-                                                     alpha = 0.1, col=k)
+                  for(k in seq(K)) mixtools::ellipse(
+                     mu[c(j,i),k], 
+                     aMTMobject$Sig[c(j,i),c(j,i),k]*aMTMobject$lam[k],
+                     alpha = 0.1, 
+                     col=k
+                  )
                }
             }#end off diagonal
             #axis

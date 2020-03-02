@@ -3,3 +3,5 @@ examples
 ^.*\.Rproj$
 ^\.Rproj\.user$
 simulations
+figs
+^.*\.pdf$

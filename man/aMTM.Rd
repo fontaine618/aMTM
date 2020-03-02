@@ -115,7 +115,7 @@ The sampling and adaptation is done by a C++ core function to which this functio
 a rank one Cholesky update and downdate function taken from the RAMCMC package available at \url{http://github.com/helske/ramcmc}.
 }
 \examples{
-
+\dontrun{
 library(aMTM)
 # Banana log-density with parameter B and a
 p <- function(x, p) apply(x,1,function(x) -x[1]^2/(2*p$a^2) - 1/2*(x[2]+p$B*x[1]^2-p$B*p$a^2)^2)
@@ -148,6 +148,7 @@ mcmcse::mcse.mat(mcmc$X)
 mcmcse::mcse.initseq(mcmc$X)$cov
 # multivariate effective sample size
 mcmcse::multiESS(mcmc$X)
+}
 
 }
 \references{
@@ -168,8 +169,8 @@ Journal of the American Statistical Association, 95:449, 121-134.
 Vihola, M. (2012). "Robust adaptive Metropolis algorithm with coerced acceptance rate". Statistics and Computing, 22:5, 997-1008.
 }
 \seealso{
-[plot.aMTM()] for plotting and [stats.aMTM()] for summaries.
+\link{plot.aMTM} for plotting and \link{stats.aMTM} for summaries.
 }
 \author{
-Simon Fontaine, \email{fontaines@dms.umontreal.ca}
+Simon Fontaine, \email{simfont@umich.edu}
 }

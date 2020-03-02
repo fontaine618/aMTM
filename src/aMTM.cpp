@@ -119,9 +119,9 @@ List aMTMsample(Function target,             // target density
                 arma::mat mu0,               // initial means
                 arma::vec lam0,              // initial scale parameter
                 int adapt,                   // update function (0= nodapt, 1=AM, 2=ASWAM, 3=RAM)
-                int global,                 // adapt global component 
-                int scale,                  // adapt non selected
-                int local,                  // use local steps (AM and ASWAM only)
+                int global,                  // adapt global component 
+                int scale,                   // adapt non selected
+                int local,                   // use local steps (AM and ASWAM only)
                 int proposal,                // type of proposal (0=independant,1=common RV,2=QMC,3=EA)
                 double accrate,              // target acceptance rate (ASWAM and RAM)
                 double gamma,                // adaptation step decrease power
@@ -131,10 +131,10 @@ List aMTMsample(Function target,             // target density
    // DECLARE VARIABLES AND INITIALIZE
    arma::vec w(K);            //vector of weights
       w.ones();
-   double sw=0.0;               //sum of weights
+   double sw=0.0;             //sum of weights
    arma::vec wt(K);           //vector of reverse weights
       wt.ones();
-   double swt=0.0;              //sum of reverse weights
+   double swt=0.0;            //sum of reverse weights
    arma::vec wb(K);           //vector of standardized weights, i.e. selection probabilities
       wb.ones();
    arma::vec Sy(K);           //vector of running selection proportions
@@ -184,8 +184,7 @@ List aMTMsample(Function target,             // target density
    // SPECIFIC INITIALIZATIONS AND PRECOMPUTATIONS FOR ADAPTATION
    //for QMC
    boost::math::normal norm;  //normal distribution object
-   //int ai = floor(2*K/3);       //Koborov integer parameter
-   int ai = 1;       //Koborov integer parameter
+   int ai = 1;                //Koborov integer parameter
    arma::vec Ua(d);           //base vector for Koborov rule (others are multiple of this one and mod1)
    if(proposal == 2){
       for(int i=0;i<d;i++)Ua(i) = pow(ai,i) /K;
@@ -254,7 +253,6 @@ List aMTMsample(Function target,             // target density
             sw=sw+wb(k);
             if(sw>un && un>sw-wb(k))s=k;
          }
-         //Sy(n,s)=1.0;
          sel(n)=s;
       // reference points sampling normal standard by correlation structure
          switch (proposal){
@@ -264,7 +262,6 @@ List aMTMsample(Function target,             // target density
             break;
          case 1:
             //common RV
-            //u = arma::randn(d);Ut = arma::repmat(u,1,K); (was wrong)
             Ut=-U;
             break;
          case 2:
@@ -299,25 +296,6 @@ List aMTMsample(Function target,             // target density
             wt(k) = tmpEval(k);
             if(beta != 0.0) wt(k) = wt(k) -beta*0.5*(d*log(2.0*M_PI*lam(k)) + log(detSig(k)) + sum(Ut.col(k)%Ut.col(k)));
          }
-         //remov the sth column
-         // j=0;
-         // for(int k=0;k<K;k++){
-         //    if(k!=s){
-         //       Ytmp.col(j) = Yt.col(k);
-         //       j++;
-         //    }
-         // }
-         // tmpEval2 = evalTarget(target,Ytmp.t(),parms);
-         // j=0;
-         // for(int k=0;k<K;k++){
-         //    if(k!=s){
-         //       wt(k) = tmpEval2(j);
-         //       j++;
-         //    }else{
-         //       wt(k) = tmpEval(s);
-         //    }
-         //    if(beta != 0.0) wt(k) = wt(k) -beta*0.5*(d*log(2.0*M_PI*lam(k)) + log(detSig(k)) + sum(Ut.col(k)%Ut.col(k)));
-         // }
          wt = exp(wt);
          swt = sum(wt);
       // MTM acceptatance probability
@@ -338,8 +316,8 @@ List aMTMsample(Function target,             // target density
          if(gam>0.99)gam=0.99;
       // adaptation cycling through the proposals
          for(int k=0;k<K;k++){
-         // adapt covariance if selected of if first and global adaptation is enables
-            if(s == k || (k==0 && global==1)){
+         // adapt covariance if selected or if first and global adaptation is enabled
+            if(s == k && !(k==0 && global == 1)){
             // AM and ASWAM are similar so we group them
                if(adapt == 1 || adapt == 2){
                // the update steps depends on the local trigger
@@ -351,7 +329,7 @@ List aMTMsample(Function target,             // target density
                         u = (X.row(n).t() - mu.col(k));
                         tmpmu = mu.col(k) + gam * u;
                         tmpnorm = arma::norm(tmpmu, 2);
-                        if(tmpnorm > 1.0e+100){tmpmu = tmpmu * (1.0e+100 / tmpnorm);}
+                        if(tmpnorm > 1.0e+12){tmpmu = tmpmu * (1.0e+12 / tmpnorm);}
                         mu.col(k) = tmpmu;
                         break;
                   }
@@ -361,15 +339,15 @@ List aMTMsample(Function target,             // target density
                   chol_update(tmpS,u);
                   tmpS = tmpS*sqrt(1.0-gam);
                   tmpnorm = arma::norm(tmpS, "fro");
-                  if(tmpnorm > 1.0e+100){tmpS = tmpS * (1.0e+100 / tmpnorm);}
-                  if(tmpnorm < 1.0e-100){tmpS = tmpS * (1.0e-100 / tmpnorm);}
+                  if(tmpnorm > 1.0e+12){tmpS = tmpS * (1.0e+12 / tmpnorm);}
+                  if(tmpnorm < 1.0e-12){tmpS = tmpS * (1.0e-12 / tmpnorm);}
                   S.slice(k) = tmpS;
                   detSig(k) = pow(arma::det(S.slice(k)),2);
                // update the scaling parameter if ASWAM
                   if(adapt == 2){
                      tmplam = exp(log(lam(k)) + gam * (a-accrate));
-                     if(tmplam > 1.0e+100){tmplam = 1.0e+100;}
-                     if(tmplam < 1.0e-100){tmplam = 1.0e-100;}
+                     if(tmplam > 1.0e+12){tmplam = 1.0e+12;}
+                     if(tmplam < 1.0e-12){tmplam = 1.0e-12;}
                      lam(k) = tmplam;
                   }
                }
@@ -378,35 +356,24 @@ List aMTMsample(Function target,             // target density
                if(adapt == 3){
                   tmpS = S.slice(k);
                   u = tmpS * U.col(k);
-                  // u = u* sqrt(gam * std::pow(fabs(a-accrate), 1.0/1.0)) /
-                  //    arma::norm(U.col(k));
                   u = u* sqrt(gam * fabs(a-accrate)) / arma::norm(U.col(k), 2);
                   if(a-accrate > 0.0) chol_update(tmpS,u);
                   else chol_downdate(tmpS,u);
                   if(any(tmpS.diag())<1e-7) {tmpS.diag() += 1e-7;}
                   tmpnorm = arma::norm(tmpS, "fro");
-                  if(tmpnorm > 1.0e+100){tmpS = tmpS * (1.0e+100 / tmpnorm);}
-                  if(tmpnorm < 1.0e-100){tmpS = tmpS * (1.0e-100 / tmpnorm);}
+                  if(tmpnorm > 1.0e+12){tmpS = tmpS * (1.0e+12 / tmpnorm);}
+                  if(tmpnorm < 1.0e-12){tmpS = tmpS * (1.0e-12 / tmpnorm);}
                   S.slice(k) = tmpS;
                   detSig(k) = pow(arma::det(S.slice(k)),2);
                }
             // adapt = 0 we do nothing
             }
          // adapt scaling of not selected if adaptation is enabled
-            // Sy(k) = Sy(k) + gam * (double(s==k) - Sy(k));
             Sy(k) = Sy(k) + gam * (wb(k) - Sy(k));
-            // if(n>100){
-            //    Sy(k) = 0.0;
-            //    for(int i = n-99;i<=n;i++){
-            //       Sy(k) += (sel(i) == k)/100.0;
-            //    }
-            // }
             if(s!=k && scale==1 && Sy(k) < 0.1/K && adapt>0){
-            // if(s!=k && scale==1 ){
-               // tmplam = exp(log(lam(k)) - gam * (1.0/K - Sy(k)));
                tmplam = exp(log(lam(k)) - gam );
-               if(tmplam > 1.0e+100) tmplam = 1.0e+100;
-               if(tmplam < 1.0e-100) tmplam = 1.0e-100;
+               if(tmplam > 1.0e+12) tmplam = 1.0e+12;
+               if(tmplam < 1.0e-12) tmplam = 1.0e-12;
                lam(k) = tmplam;
             }
          }

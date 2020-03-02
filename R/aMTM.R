@@ -1,4 +1,6 @@
 #' 
+#' @name aMTM
+#' 
 #' @title Adaptive Multiple-Try Metropolis algorithm
 #'
 #' @description This function performs the Adaptive Multiple-Try Metropolis algorithm as described in Fontaine and Bedard (2019). 
@@ -96,9 +98,9 @@
 #' The sampling and adaptation is done by a C++ core function to which this function is only a wrapper. The adaptation procedure rely on
 #' a rank one Cholesky update and downdate function taken from the RAMCMC package available at \url{http://github.com/helske/ramcmc}.
 #'
-#' @seealso [plot.aMTM()] for plotting and [stats.aMTM()] for summaries.
+#' @seealso \link{plot.aMTM} for plotting and \link{stats.aMTM} for summaries.
 #'
-#' @author Simon Fontaine, \email{fontaines@@dms.umontreal.ca}
+#' @author Simon Fontaine, \email{simfont@@umich.edu}
 #' 
 #' @references 
 #' Andrieu, C. and Thoms, J. (2008). "A tutorial on adaptive MCMC". Statistics and computing, 18:4, 343-373.
@@ -119,7 +121,7 @@
 #' 
 #'
 #' @examples
-#' 
+#' \dontrun{
 #' library(aMTM)
 #' # Banana log-density with parameter B and a
 #' p <- function(x, p) apply(x,1,function(x) -x[1]^2/(2*p$a^2) - 1/2*(x[2]+p$B*x[1]^2-p$B*p$a^2)^2)
@@ -152,6 +154,7 @@
 #' mcmcse::mcse.initseq(mcmc$X)$cov
 #' # multivariate effective sample size
 #' mcmcse::multiESS(mcmc$X)
+#' }
 #' 
 
 
@@ -185,7 +188,7 @@ aMTM <- function(target,N,K,x0,...) {
       }
       # Check if mu0 is supplied. Otherwise, we initialize to 0
       if(is.null(opt$mu0)){
-         opt$mu0 <- matrix(0,d,K)
+         opt$mu0 <- matrix(x0,d,K,F)
       }else{
          if(any(dim(opt$mu0)!=c(d,K))) stop("mu0 must be of dimension (d,K).")
       }

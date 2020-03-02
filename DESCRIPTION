@@ -8,7 +8,7 @@ Description: Produces a Monte Carlo sample from a continuous distribution of a r
 License: GPL-2
 URL: https://github.com/fontaine618/aMTM/
 Repository: GitHub
-Depends: BH, RcppArmadillo
+LinkingTo: BH, RcppArmadillo, Rcpp
 NeedsCompilation: Yes
 Encoding: UTF-8
 LazyData: true
@@ -17,6 +17,5 @@ Suggests:
     mcmcse,
     mixtools,
     testthat (>= 2.1.0)
-Imports: Rcpp (>= 0.12.15), RcppArmadillo, BH, coda
-LinkingTo: Rcpp, RcppArmadillo, BH
+Imports: Rcpp (>= 0.12.15), RcppArmadillo, BH
 RoxygenNote: 6.1.1

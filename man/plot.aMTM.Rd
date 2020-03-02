@@ -37,7 +37,7 @@ When \code{pairs=TRUE}, the 2-D marginal plots of \code{X} for each pair of vari
 \code{vars}.
 }
 \examples{
-
+\dontrun{
 library(aMTM)
 # Banana log-density with parameter B and a
 p <- function(x, p) apply(x,1,function(x) -x[1]^2/(2*p$a^2) - 1/2*(x[2]+p$B*x[1]^2-p$B*p$a^2)^2)
@@ -54,11 +54,11 @@ plot.aMTM(mcmc, color=T)
 plot.aMTM(mcmc, type='l', color=T)
 #plot the marginals with colors
 plot.aMTM(mcmc, pairs=F, color=T)
-
+}
 }
 \seealso{
-[aMTM()].
+\link{aMTM}.
 }
 \author{
-Simon Fontaine, \email{fontaines@dms.umontreal.ca}
+Simon Fontaine, \email{simfont@umich.edu}
 }

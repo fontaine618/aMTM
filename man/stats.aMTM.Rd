@@ -23,7 +23,7 @@ A vector containing the following statistics:
 Summary statistics for the output chain of an aMTM object.
 }
 \examples{
-
+\dontrun{
 library(aMTM)
 # Banana log-density with parameter B and a
 p <- function(x, p) apply(x,1,function(x) -x[1]^2/(2*p$a^2) - 1/2*(x[2]+p$B*x[1]^2-p$B*p$a^2)^2)
@@ -37,6 +37,7 @@ mcmc <- aMTM(target=p, N=N, K=K, x0=c(0,0), parms=list(a=a,B=B), burnin=0.1)
 stats.aMTM(mcmc$X)
 
 stats.aMTM(mcmc$X, diag(1:2))
+}
 
 }
 \references{
@@ -45,8 +46,8 @@ Fontaine, S. and Bedard, M. (2019). "An Adaptive Multiple-Try Metropolis algorit
 Vats, D., Flegal, J. M., and, Jones, G. L. (2015). "Multivariate Output Analysis for Markov chain Monte Carlo". arXiv preprint arXiv:1512.07713.
 }
 \seealso{
-[aMTM()].
+\link{aMTM}.
 }
 \author{
-Simon Fontaine, \email{fontaines@dms.umontreal.ca}
+Simon Fontaine, \email{simfont@umich.edu}
 }

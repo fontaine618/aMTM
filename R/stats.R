@@ -17,9 +17,9 @@
 #' \item{\code{ess}}{The multivariate ESS of the chain as described by Vats et al. (2015).}
 #' 
 #' 
-#' @author Simon Fontaine, \email{fontaines@@dms.umontreal.ca}
+#' @author Simon Fontaine, \email{simfont@@umich.edu}
 #' 
-#' @seealso [aMTM()].
+#' @seealso \link{aMTM}.
 #'
 #' @references 
 #' 
@@ -29,7 +29,7 @@
 #' 
 #' 
 #' @examples
-#' 
+#' \dontrun{
 #' library(aMTM)
 #' # Banana log-density with parameter B and a
 #' p <- function(x, p) apply(x,1,function(x) -x[1]^2/(2*p$a^2) - 1/2*(x[2]+p$B*x[1]^2-p$B*p$a^2)^2)
@@ -43,6 +43,7 @@
 #' stats.aMTM(mcmc$X)
 #' 
 #' stats.aMTM(mcmc$X, diag(1:2))
+#'}
 #'
 
 stats.aMTM <- function(X, cov = NULL){
