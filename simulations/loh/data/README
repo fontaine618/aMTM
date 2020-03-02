@@ -1,0 +1,14 @@
+The 'LOH.scm' file is the main script.
+Read its starting section for a detail of all the simulation settings.
+
+= How to run the simulations
+Type 'make' at the shell prompt to compile and link the C files.
+
+Run the guile script by typing at the shell prompt:
+
+$ guile < LOH.scm > LOH.scm.out 2> LOH.scm.err
+
+This may take a while. Possible error messages are redirected to the '.err'
+file, extra output stuff to the '.out' file.
+
+Run the R script 'LOH.R' to load and analyse the produced chain.
