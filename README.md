@@ -197,18 +197,18 @@ The covariance updates use rank one Cholesky updates which are performed using a
 
 ## References
 
-Andrieu, C. and Thoms, J. (2008). "A tutorial on adaptive MCMC". Statistics and computing, 18:4, 343-373.
+Andrieu, C. and Thoms, J. (2008). *A tutorial on adaptive MCMC*. Statistics and computing, 18:4, 343-373.
 
-Craiu, R.V. and Lemieux., C. (2007). "Acceleration of the multiple-try Metropolis algorithm using
-antithetic and stratifed sampling". Statistics and computing, 17:2, 109.
+Craiu, R.V. and Lemieux., C. (2007). *Acceleration of the multiple-try Metropolis algorithm using
+antithetic and stratifed sampling*. Statistics and computing, 17:2, 109.
  
-Fontaine, S. and Bedard, M. (2020+). "An adaptive multiple-try Metropolis algorithm". To be submitted.
+Fontaine, S. and Bedard, M. (2020+). *An adaptive multiple-try Metropolis algorithm*. To be submitted.
 
-Haario, H., Saksman, E., Tamminen, J. et al. (2001). "An adaptive Metropolis algorithm". Bernoulli, 7:2, 223-242.
+Haario, H., Saksman, E., Tamminen, J. et al. (2001). *An adaptive Metropolis algorithm*. Bernoulli, 7:2, 223-242.
 
-Helske, J. (2018). "ramcmc: Robust Adaptive Metropolis Algorithm". R package version 0.1.0-1, \url{http://github.com/helske/ramcmc}.
+Helske, J. (2018). *ramcmc: Robust Adaptive Metropolis Algorithm*. R package version 0.1.0-1, [http://github.com/helske/ramcmc].
 
-Liu, J.S., Liang, F. and Wong, W.H. (2000). "The Multiple-Try Method and Local Optimization in Metropolis Sampling". 
+Liu, J.S., Liang, F. and Wong, W.H. (2000). *The Multiple-Try Method and Local Optimization in Metropolis Sampling*. 
 Journal of the American Statistical Association, 95:449, 121-134.
 
-Vihola, M. (2012). "Robust adaptive Metropolis algorithm with coerced acceptance rate". Statistics and Computing, 22:5, 997-1008.
+Vihola, M. (2012). *Robust adaptive Metropolis algorithm with coerced acceptance rate*. Statistics and Computing, 22:5, 997-1008.
