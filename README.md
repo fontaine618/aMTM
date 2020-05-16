@@ -2,7 +2,7 @@
 
 ## Description of the Package
 
-This **R** package implements the aMTM algorithm of Fontaine and Bédard (2019). The sampling algorithm is implemented in a **C++** function accessed from a wrapper function in **R**. 
+This **R** package implements the aMTM algorithm of Fontaine and Bédard (2020+). The sampling algorithm is implemented in a **C++** function accessed from a wrapper function in **R**. 
 
 
 
@@ -87,7 +87,7 @@ By default, the `aMTM` function uses the following settings:
 * `mu0` : the initial means (for AM and ASWAM updates) are set to vectors of zeros;
 * `lam0` : the initial scales are set to $(2.38)^2/d$ following optimal scale results;
 * `adapt` : the adaptation performed is ASWAM updates;
-* `global` : only the selected proposal has its density adapted;
+* `global` : any proposal is updated when selected;
 * `scale` : no adaptation of the scales of unselected densities is performed;
 * `local` : the local updates are not used;
 * `proposal` : independent proposal are used;
