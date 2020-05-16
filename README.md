@@ -2,7 +2,7 @@
 
 ## Description of the Package
 
-This **R** package implements the aMTM algorithm of Fontaine and Bédard (2019). The sampling algorithm is implemented in a **C++** function accessed from a wrapper function in **R**. 
+This **R** package implements the aMTM algorithm of Fontaine and Bédard (2020+). The sampling algorithm is implemented in a **C++** function accessed from a wrapper function in **R**. 
 
 
 
@@ -87,7 +87,7 @@ By default, the `aMTM` function uses the following settings:
 * `mu0` : the initial means (for AM and ASWAM updates) are set to vectors of zeros;
 * `lam0` : the initial scales are set to $(2.38)^2/d$ following optimal scale results;
 * `adapt` : the adaptation performed is ASWAM updates;
-* `global` : only the selected proposal has its density adapted;
+* `global` : any proposal is updated when selected;
 * `scale` : no adaptation of the scales of unselected densities is performed;
 * `local` : the local updates are not used;
 * `proposal` : independent proposal are used;
@@ -197,6 +197,18 @@ The covariance updates use rank one Cholesky updates which are performed using a
 
 ## References
 
-Fontaine, S. and Bédard, M. (2019) *Adaptive Multiple-Try Metropolis Algorithm*. To be submitted.
+Andrieu, C. and Thoms, J. (2008). "A tutorial on adaptive MCMC". Statistics and computing, 18:4, 343-373.
 
-Helske, J. (2018) *Robust Adaptive Metropolis Algorithm*, R package version 0.1.0-1. URL: http://github.com/helske/ramcmc.
+Craiu, R.V. and Lemieux., C. (2007). "Acceleration of the multiple-try Metropolis algorithm using
+antithetic and stratifed sampling". Statistics and computing, 17:2, 109.
+ 
+Fontaine, S. and Bedard, M. (2020+). "An adaptive multiple-try Metropolis algorithm". To be submitted.
+
+Haario, H., Saksman, E., Tamminen, J. et al. (2001). "An adaptive Metropolis algorithm". Bernoulli, 7:2, 223-242.
+
+Helske, J. (2018). "ramcmc: Robust Adaptive Metropolis Algorithm". R package version 0.1.0-1, \url{http://github.com/helske/ramcmc}.
+
+Liu, J.S., Liang, F. and Wong, W.H. (2000). "The Multiple-Try Method and Local Optimization in Metropolis Sampling". 
+Journal of the American Statistical Association, 95:449, 121-134.
+
+Vihola, M. (2012). "Robust adaptive Metropolis algorithm with coerced acceptance rate". Statistics and Computing, 22:5, 997-1008.
