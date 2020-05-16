@@ -206,7 +206,7 @@ Fontaine, S. and Bedard, M. (2020+). *An adaptive multiple-try Metropolis algori
 
 Haario, H., Saksman, E., Tamminen, J. et al. (2001). *An adaptive Metropolis algorithm*. Bernoulli, 7:2, 223-242.
 
-Helske, J. (2018). *ramcmc: Robust Adaptive Metropolis Algorithm*. R package version 0.1.0-1, [http://github.com/helske/ramcmc].
+Helske, J. (2018). *ramcmc: Robust Adaptive Metropolis Algorithm*. R package version 0.1.0-1, http://github.com/helske/ramcmc.
 
 Liu, J.S., Liang, F. and Wong, W.H. (2000). *The Multiple-Try Method and Local Optimization in Metropolis Sampling*. 
 Journal of the American Statistical Association, 95:449, 121-134.
