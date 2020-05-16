@@ -61,7 +61,7 @@ stats.aMTM <- function(X, cov = NULL){
    Sigmainv <- solve(Sigma)
    msejd <-  mean(sqrt( apply(dif, 1, function(row) row %*% Sigmainv %*% row) ))
    #autocorrelation time of the mean
-   SigmaP <- mcmcse::mcse.multi(X)$cov
+   SigmaP <- mcmcse::mcse.multi(X, r=2)$cov
    S <- t(chol(Sigma))
    Sinv <- solve(S)
    ACT <- Sinv %*% SigmaP %*% t(Sinv)

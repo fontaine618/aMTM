@@ -18,4 +18,4 @@ Suggests:
     mixtools,
     testthat (>= 2.1.0)
 Imports: Rcpp (>= 0.12.15), RcppArmadillo, BH
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2

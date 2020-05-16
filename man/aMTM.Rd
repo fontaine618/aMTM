@@ -28,7 +28,7 @@ for AM and ASWAM updates. Default is \eqn{K} zero vectors.}
 \item{adapt}{Determines the type of update of the covaraince done in the adaptation step : \dQuote{AM} or 1 performs AM updates, 
 \dQuote{ASWAM} or 2 performs ASWAM updates, \dQuote{RAM} or 3 performs RAM updates, any other value produces no update. Default is \code{"ASWAM"}.}
 
-\item{global}{Boolean value enabling the use of a global component that is updated at every iteration. Default is \code{FALSE}.}
+\item{global}{Boolean value enabling the use of a global component that is not adapted (the first one). Default is \code{FALSE}.}
 
 \item{scale}{Boolean value enabling the adaptation of the scale parameter of the proposals that were not selected. It consists of 
 reducing the scale aprameter whenever the running selection proportion is below \eqn{0.1/K}. Default is \code{FALSE}.}
@@ -69,7 +69,7 @@ the \code{coda} package.}
 This function performs the Adaptive Multiple-Try Metropolis algorithm as described in Fontaine and Bedard (2019). 
 The sampling step is performed via a MTM algorithm with \eqn{K} gaussian proposals which may be correlated (see argument \code{proposal} and details) 
 and using either weights that are proportional to the target density or importance weights. The adaptation step is performed
-via one of AM, ASWAM or RAM updates of the selected proposal density; a global component may also be adapted at each iteration 
+via one of AM, ASWAM or RAM updates of the selected proposal density; a fixed global component may also be adapted at each iteration 
 (see argument \code{global} and details) and the scale paramters may be adapted at each iteration (see argument \code{scale} and details). The AM and 
 ASWAM update may be done using local steps rather than global steps (see argument \code{local} and details).
 }
@@ -157,7 +157,7 @@ Andrieu, C. and Thoms, J. (2008). "A tutorial on adaptive MCMC". Statistics and 
 Craiu, R.V. and Lemieux., C. (2007). "Acceleration of the multiple-try Metropolis algorithm using
 antithetic and stratifed sampling". Statistics and computing, 17:2, 109.
 
-Fontaine, S. and Bedard, M. (2019). "An Adaptive Multiple-Try Metropolis algorithm". To be submitted.
+Fontaine, S. and Bedard, M. (2020+). "An Adaptive Multiple-Try Metropolis algorithm". To be submitted.
 
 Haario, H., Saksman, E., Tamminen, J. et al. (2001). "An adaptive Metropolis algorithm". Bernoulli, 7:2, 223-242.
 

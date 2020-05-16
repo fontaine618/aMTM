@@ -13,7 +13,7 @@ This **R** package implements the aMTM algorithm of Fontaine and Bédard (2019). 
 You can install the R package directly from GitHub using the **devtools** package function `install_github` using the following **R** command :
 
 ```R
-devtools::install_github("fontaine618/aMTM/aMTM")
+devtools::install_github("fontaine618/aMTM")
 ```
 
 ### The target density

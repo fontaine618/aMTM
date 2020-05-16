@@ -4,8 +4,7 @@
 \alias{plot.aMTM}
 \title{Plot the chain of an aMTM object}
 \usage{
-\method{plot}{aMTM}(aMTMobject, vars, type, color, pairs, prop.density,
-  ...)
+\method{plot}{aMTM}(aMTMobject, vars, type, color, pairs, prop.density, ...)
 }
 \arguments{
 \item{aMTMobject}{An object of class \code{aMTM}.}
